@@ -12,6 +12,7 @@
 #------------------------------------------------
 options:
 
+	prefix : §e[§dMineskill§e]§r
 	
 	permission.admin : mineskill.admin
 	
@@ -21,34 +22,23 @@ options:
 
 	rayonmm : 1000
 	rayonmx : 25000
-	
-	sign.SKRIPT : [tpalea]
-	sign.UPDATE : update
-	
-	npc.NAME : &aTéléporteur aléatoire
-	
-	message.PREFIX : §e[§dMineskill§e]§r
 
-	message.TELEPORT_DONE : §2Vous avez été téléporté avec succès dans un rayon de §6%{_rayonmx}% §2blocs depuis le spawn.
-	
-	message.UPDATE_INIT : §aTéléchargement de la mise à jour...
-	message.UPDATE_INSTALL : §aInstallation de la mise à jour...
-	message.UPDATE_DONE : §aMise à jour installée avec succès !
+	message.tpalea : §2Vous avez été téléporté avec succès dans un rayon de §6%{_rayonmx}% §2blocs depuis le spawn.
 	
 on sign change:
-	line 1 of block is "{@sign.SKRIPT}"
+	line 1 of block is "[tpalea]"
 	player has permission "{@permission.admin}"
-	line 2 of block is "{@sign.UPDATE}":
-		message "{@message.PREFIX} {@message.UPDATE_INIT}"
+	line 2 of block is "update":
+		message "{@prefix} §aTéléchargement de la mise à jour..."
 		wait 1 tick
 		download from "https://pastebin.com/raw/aTx00zAw" to "plugins/Skript/scripts/%script%.sk"	#	WildSkript
-		message "{@message.PREFIX} {@message.UPDATE_INSTALL}"
+		message "{@prefix} §aInstallation de la mise à jour..."
 		execute console command "sk reload %script%"
 		wait 1 tick
-		message "{@message.PREFIX} {@message.UPDATE_DONE}"
+		message "{@prefix} §aMise à jour installée avec succès !"
 	
 on citizen right click:
-	citizen is named "{@npc.NAME}"
+	citizen is named "&aTéléporteur aléatoire"
 	{tpalea.%player%} isn't set
 	set {tpalea.%player%} to true
 	loop 3 times:
@@ -58,5 +48,5 @@ on citizen right click:
 	# execute console command "spreadplayers ~%x-coordinates of event-location% ~%z-coordinates of event-location% {@rayonmm} {@rayonmx} false %player%"
 	execute console command "execute at %player% run spreadplayers ~0 ~0 {@rayonmm} {@rayonmx} false %player%"
 	set {_rayonmx} to {@rayonmx}
-	send "{@message.TELEPORT_DONE}"
+	send "{@message.tpalea}"
 	clear {tpalea.%player%}
