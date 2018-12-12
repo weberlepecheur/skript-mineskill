@@ -3,7 +3,7 @@
 #			Auteur : WeBer_Le_Pecheur (mail : rouer69@hotmail.fr)
 #			Pour : Mineskill
 #			Requis : Skript
-#			Testé sous : Skript 2.2-dev36
+#			Testé sous : Skript 2.3-beta4, WildSkript 1.9
 #
 #------------------------------------------------
 on first join:
@@ -11,7 +11,7 @@ on first join:
 	set {_pass} to false
 	while {_pass} is false:
 		set {_uuid} to player's uuid
-		set {_grade} to single value "users.%{_uuid}%.group" get of "plugins/PermissionsEx/permissions.yml"
+		set {_grade} to single value "users.%{_uuid}%.group" get of "plugins/PermissionsEx/permissions.yml" # WildSkript
 		replace all "[" with "" in {_grade}
 		replace all "]" with "" in {_grade}
 		if {_grade} is set:
