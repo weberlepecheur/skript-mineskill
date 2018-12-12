@@ -1,0 +1,283 @@
+﻿#------------------------------------------------
+#
+#			Auteur : WeBer_Le_Pecheur (rouer69@hotmail.fr)
+#			Pour : Mineskill.fr
+#			Requis : Skript
+#			Testé sous : Skript 2.2-beta4
+#
+#------------------------------------------------
+#
+#			Options
+#
+#------------------------------------------------
+options:
+
+#	#	#	#	#	#	#
+#	Réglages des options
+	niveau : 5
+	ligne.creation : [xpbank]
+	ligne.2 : %player%
+	ligne.3 : Level
+	ligne.4 : XP
+	
+	world : world
+	
+	debugPlayer : WeBer_Le_Pecheur|Raphy123|THEivrogne99
+	
+#	#	#	#	#	#	#
+# Permissions requises
+	permission.message : §cVous n'avez pas la permission d'utiliser l'xpbank.
+	permission.global : mineskill.xpbank.use
+	permission.admin : mineskill.admin
+
+#	#	#	#	#	#	#
+#	Message
+	
+	prefix : §7[XPBANK]§r
+	
+	erreur.creer : §cVous ne pouvez pas créer une autre xpbank.
+	erreur.monde : §cVous ne pouvez pas créer d'xpbank dans ce monde.
+	erreur.joueur : §cVous ne pouvez pas intéragir avec l'xpbank d'un autre joueur.
+	erreur.niveau : §cVous n'avez aucun niveau à stocké.
+	erreur.casse : §cVous ne pouvez casser un bloc qui est attaché à une xpbank.
+	retire.niveau : §2Vous avez retiré §65 §2niveau(x).
+	retire.niveau2 : §2Vous avez retiré §6%{_signLevel}% §2niveau(x) et §6%{_signXp}% §2xp.
+	retire.tout : §2Vous avez retiré §6%{_level}% §2niveau(x).
+	ajoute.tout : §9Vous avez ajouté §6%player's level% §9niveau(x).
+	
+	retire.xpbank : Clique sur la pancarte xpbank pour la retirer.
+	retire.xpbank.success : L'xpbank à bien été retirée.
+	retire.xpbank.success.admin : L'xpbank appartenait à §4%{_player}%§r.
+
+function xpbank_getOrb(level: integer) :: number:
+	{_level} is between 0 and 16:
+		set {_result} to ({_level}) ^ 2 + 6 * {_level}
+	{_level} is between 17 and 31:
+		set {_result} to 2.5 * ({_level}) ^ 2 - 40.5 * {_level} + 360
+	{_level} > 31:
+		set {_result} to 4.5 * ({_level}) ^ 2 - 162.5 * {_level} + 2220
+	return {_result}
+
+function xpbank_getLev(level: integer) :: number:
+	{_level} is between 0 and 16:
+		set {_result} to 2 * {_level} + 7
+	{_level} is between 17 and 31:
+		set {_result} to 5 * {_level} - 38
+	{_level} > 31:
+		set {_result} to 9 * {_level} - 158
+	return {_result}
+
+on join:
+	{xpbank.%player%} is set
+	clear {xpbank.%player%}
+
+command /xpkremove:
+	permission: {@permission.global}
+	permission message: {@permission.message}
+	trigger:
+		set {xpbank.%player%} to true
+		send "{@prefix} {@retire.xpbank}"
+		wait 2 minutes
+		{xpbank.%player%} is set
+		clear {xpbank.%player%}
+		
+command /xpkforceremove:
+	permission: {@permission.admin}
+	permission message: {@permission.message}
+	trigger:
+		set {xpbank.%player%} to true		
+		send "{@prefix} {@retire.xpbank}"
+		wait 2 minutes
+		{xpbank.%player%} is set
+		clear {xpbank.%player%}
+			
+
+command /xpkupdate:
+	permission message: {@permission.message}
+	permission: {@permission.admin}
+	trigger:
+		message "{@prefix} §aTéléchargement de la mise à jour..."
+		wait 1 tick
+		download from "https://pastebin.com/raw/KgruAVtJ" to "plugins/Skript/scripts/%script%.sk"	#	WildSkript
+		message "{@prefix} §aInstallation de la mise à jour..."
+		execute console command "sk reload %script%"
+		wait 1 tick
+		message "{@prefix} §aMise à jour installée avec succès !"
+
+command /xpkdebug <text> <offline player>:
+	permission message: {@permission.message}
+	permission: {@permission.admin}
+	usage: §c/xkpdebug §7<find | remove/rem> §6<player>§r
+	trigger:
+		if arg 1 is "find":
+			send "{@prefix} §eJoueur: §6%arg 2%    §eLocalisation: §3%{xpbank.%uuid of arg 2%}%"
+		else if arg 1 is "remove" or "rem":
+			loop {xpbank::*}:
+				loop-value is uuid of arg 2
+				send "§6%offline player from loop-value%   §7%loop-value%" # Tuske
+				send "§6%offline player from loop-value%   §rretiré" # Tuske
+				remove loop-value from {xpbank::*}
+				stop
+		else if arg 1 is "else":
+			execute console command "give %player% iron_axe 1 {display:{Name:""{\""text\"":\""§6Chasseur expert de citrouilles\""}"",Lore:["""",""§6Evénement d'Halloween 2018"","""",""§eItem unique Mineskill"",""§eInvendable""]},Enchantments:[{id:""minecraft:efficiency"",lvl:2},{id:""minecraft:unbreaking"",lvl:2}]}"
+on break:
+	loop blocks in radius 1 of event-location:
+		line 1 of loop-block is "{@ligne.creation}"
+		if loop-block is a wall sign:
+			loop blocks in radius 1 of loop-block-1:
+				location of loop-block-2 is event-location
+				set {_loc} to location of loop-block-2
+			# loop blocks in radius 1 of loop-block-1:
+				# location of loop-block-2 behind location of loop-block-1
+				# location of loop-block-2 is event-location
+				# set {_loc} to location of loop-block-2
+			# loop blocks in radius 1 of loop-block:
+				# location of loop-block-2 is event-location
+				# set {_loc} to location of loop-block-2
+				# set {_loc} to location of block behind location of loop-block
+		else if loop-block is a floor sign:
+			set {_loc} to location of block below location of loop-block
+		event-location is {_loc}
+		send "{@prefix} {@erreur.casse}"
+		send "{@prefix} Si vous êtes propriétaire de la pancarte, faites /xpkremove pour retirer votre pancarte, pensez à prendre vos niveaux avant !"
+		cancel event
+		stop
+
+on sign change:
+	line 1 of block is "{@ligne.creation}"
+	loop {xpbank::*}:
+		loop-value is uuid of player
+		send "{@prefix} {@erreur.creer}"
+		set line 1 of block to ""
+		stop
+	if player's world is "{@world}":
+		set line 2 of block to "{@ligne.2}"
+		set line 3 of block to "{@ligne.3}: 0"
+		set line 4 of block to "{@ligne.4}: 0"
+		add uuid of player to {xpbank::*}
+		set {xpbank.%uuid of player%} to location of event-block
+	else:
+		send "{@prefix} {@erreur.monde}"
+		set line 1 of block to ""
+
+on left click on sign:
+	line 1 of block is "{@ligne.creation}"
+	cancel event
+	if {xpbank.%player%} is set:
+		set {_player} to line 2 of block parsed as offline player
+		set {_uuid} to uuid of {_player}
+		player has permission "{@permission.admin}":
+			send "{@prefix} {@retire.xpbank.success.admin}"
+		else:
+			uuid of player isn't {_uuid}
+			send "{@prefix} {@erreur.joueur}"
+			stop
+		send "{@prefix} {@retire.xpbank.success}"
+		loop {xpbank::*}:
+			loop-value is {_uuid}
+			remove loop-value from {xpbank::*}
+			stop loop
+		set line 1 of block to ""
+		set line 2 of block to ""
+		set line 3 of block to ""
+		set line 4 of block to ""
+		clear {xpbank.%{_player}%} and {xpbank.%{_uuid}%}
+		stop
+	player has permission "{@permission.global}":
+		# set {_temp} to "{@debugPlayer}"
+		# set {_debugPlayer::*} to {_temp} split by "|"
+		# loop {_debugPlayer::*}:
+			# set {_debugPlayer::%loop-index%} to loop-value parsed as offline player
+		line 2 of block is player:
+			set {_line::*} to line 3 of block split at ": "
+			add line 4 of block split at ": " to {_line::*}
+			set {_signLevel} to {_line::2} parsed as number
+			set {_signXp} to {_line::4} parsed as number
+			set {_xpPlayer} to player's xp
+			{_xpPlayer} > 0:
+				send "{@prefix} {@ajoute.tout}"
+				{_signLevel} = 0:
+					set {_signLevel} to player's level
+					set player's level to 0
+				else:
+					set {_while} to true
+					while {_while} is true:
+						set {_getLevel} to xpbank_getLev({_signLevel})			# Combien de level pour aller au niveau supérieur (panneau)
+						# log "%player%: 1: XP Nécessaire : %{_getLevel}% pour up Lv%({_signLevel}+1)%" to "xpbank.log"
+						# log "%player%: 2: Retire XP sign : %{_signXp}% de XP up %{_getLevel}%" to "xpbank.log"
+						log " add | BANK: %{_signLevel}%Lv | BANK: %{_signXp}%XP | %player%: %{_xpPlayer}%XP" to "xpbank.log"
+						# send "§7[LOG] §fadd §7| §fBANK: §6%{_signLevel}%§fLv §7| §fBANK: §6%{_signXp}%§fXP §7| §6%player%§f: §6%{_xpPlayer}%§fXP" to {_debugPlayer::*}
+						# send "%player%: §61: §rXP Nécessaire : %{_getLevel}% pour up Lv%({_signLevel}+1)%" to {_debugPlayer}
+						# send "%player%: §62: §rRetire XP sign : %{_signXp}% de XP up %{_getLevel}%" to {_debugPlayer}
+						set {_remainXp} to ({_getLevel} - {_signXp})			# Xp restant nécessaire après avoir soustrait l'xp contenu dans le panneau
+						set {_signXp} to 0										# Met l'xp panneau à 0
+						{_remainXp} < {_xpPlayer}:								# L'xp nécessaire pour up est < à l'xp du joueur
+							# log "%player%: 3: Retire XP nécessaire : %{_remainXp}% du joueur : %{_xpPlayer}%" to "xpbank.log"
+							# send "%player%: §63: §rRetire XP nécessaire : %{_remainXp}% du joueur : %{_xpPlayer}%" to {_debugPlayer}
+							remove {_remainXp} from {_xpPlayer}					# Retire xp nécessaire de l'xp joueur
+							add 1 to {_signLevel}
+						else:
+							# log "%player%: 4: Retire XP joueur : %{_xpPlayer}% de l'xp nécessaire %{_remainXp}%" to "xpbank.log"
+							# send "%player%: §64: §rRetire XP joueur : %{_xpPlayer}% de l'xp nécessaire %{_remainXp}%" to {_debugPlayer}
+							remove {_xpPlayer} from {_remainXp}					# Retire xp joueur de l'xp nécessaire pour up
+							# log "%player%: 5: XP panneau devient : %({_getLevel} - {_remainXp})%" to "xpbank.log"
+							# send "%player%: §65: §rXP panneau devient : %({_getLevel} - {_remainXp})%" to {_debugPlayer}
+							set {_signXp} to ({_getLevel} - {_remainXp})
+							clear {_while}
+					set player's xp to 0
+				set line 3 of block to "{@ligne.3}: %{_signLevel}%"
+				set line 4 of block to "{@ligne.4}: %{_signXp}%"
+				log " end | BANK: %{_signLevel}%Lv | BANK: %{_signXp}%XP §7| %player%: %player's xp%XP" to "xpbank.log"
+				# send "§7[LOG] §fend §7| §fBANK: §6%{_signLevel}%§fLv §7| §fBANK: §6%{_signXp}%§fXP §7| §6%player%§f: §6%player's xp%§fXP" to {_debugPlayer::*}
+			else:
+				send "{@prefix} {@erreur.niveau}"
+		else:
+			send "{@prefix} {@erreur.joueur}"
+	else:
+		send "{@prefix} {@permission.message}"		
+
+on right click on sign:
+	line 1 of block is "{@ligne.creation}"
+	cancel event
+	player has permission "{@permission.global}":
+		line 2 of block is player:
+			set {_line::*} to line 3 of block split at ": "
+			add line 4 of block split at ": " to {_line::*}
+			set {_signLevel} to {_line::2} parsed as number
+			set {_signXp} to {_line::4} parsed as number
+			player is sneaking:
+				{_signLevel} isn't 0
+				set player's xp to (xpbank_getOrb({_signLevel}) + {_signXp} + player's xp)
+				set line 3 of block to "{@ligne.3}: 0"
+				set line 4 of block to "{@ligne.4}: 0"
+				send "{@prefix} {@retire.tout}"
+			else:
+				{_signLevel} <= {@niveau}:
+					{_signLevel} and {_signXp} = 0:
+						stop
+					set player's xp to (xpbank_getOrb({_signLevel}) + {_signXp} + player's xp)
+					set line 3 of block to "{@ligne.3}: 0"
+					set line 4 of block to "{@ligne.4}: 0"
+					send "{@prefix} {@retire.niveau2}"
+				else:
+					set player's xp to (xpbank_getOrb({@niveau}) + player's xp)
+					if xpbank_getOrb({_signLevel}) > xpbank_getOrb({@niveau}):								#	Si les niveaux sur le panneau sont supérieur à ceux soustrait.
+						set {_orb} to xpbank_getOrb({@niveau})
+						if {_signXp} > {_orb}:																					#	Si l'xp sur le panneau est supérieur à ceux soustrait.
+							remove {_orb} from {_signXp}
+						else:
+							set {_while} to true
+							while {_while} is true:
+								remove {_signXp} from {_orb}
+								remove 1 from {_signLevel}
+								set {_signXp} to xpbank_getLev({_signLevel})
+								if {_signXp} > {_orb}:
+									remove {_orb} from {_signXp}
+									clear {_while}
+					set line 3 of block to "{@ligne.3}: %{_signLevel}%"
+					set line 4 of block to "{@ligne.4}: %{_signXp}%"
+					send "{@prefix} {@retire.niveau}"
+		else:
+			send "{@prefix} {@erreur.joueur}"
+	else:
+		send "{@prefix} {@permission.message}"
