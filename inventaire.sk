@@ -33,10 +33,13 @@ command /inventaire [<offlineplayer>]:
 						make a gui slot (loop-number + 8) of player with yellow stained glass pane to nothing
 					loop {inventaire::%{_arg}%::%{_index}%::*}:
 						set {_i} to loop-index-2 parsed as number
+						set {_v} to loop-value-2
 						{_i} >= 9:
-							make a gui slot ({_i} + 9) of player with loop-value-2 to nothing
+							make a gui slot ({_i} + 9) of player with {_v} to run:
+								give {_v} to player
 						else:
-							make a gui slot {_i} of player with loop-value-2 to nothing
+							make a gui slot {_i} of player with {_v} to run:
+								give {_v} to player
 				add 1 to {_slot}
 		else:
 			send ""
