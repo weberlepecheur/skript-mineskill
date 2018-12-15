@@ -1,0 +1,592 @@
+﻿#------------------------------------------------
+#
+#			Auteur : WeBer_Le_Pecheur (mail : rouer69@hotmail.fr)
+#			Pour : Mineskill
+#			Requis : Skript, SkQuery, TuSKe, WildSkript, SkRayFall, RandomSk
+#			Testé sous : Skript 2.2-dev14b, SkQuery 3.21.4, TuSke 1.7.3, WildSkript 1.9, SkRayFall 1.9.5, RandomSk 2.0 (2.5 project version)
+#			Version : 0.1.9b
+#
+#------------------------------------------------
+#
+#			Classement par hologramme
+#
+#------------------------------------------------
+#
+#			Options
+#
+#------------------------------------------------
+options:
+	# Commande lambda
+	commande : /duel
+	# Commande pour administrateur
+	commande.admin : /sduel
+	# Permissions requises
+	permission.message : &cVous n'avez pas la permission d'utiliser cette commande.
+	permission.global : mineskill.duel.use
+	permission.admin : mineskill.admin
+	# Tampon mineskill et autres
+	prefix : &e[&9BETA&6-&dDuel&e]&2
+	debug : &e[&dDEBUG&e]&c
+	erreur : &e[&4ERREUR&e]&c
+	# Version du skript
+	version : 0.1.9b
+#
+#	Lors du chargement du script, si aucun monde n'avait été enregistré ou que le fichier variable.csv a été supprimé,
+#	ajoute le monde "world" par défaut dans la variable liste.
+#
+on script load:
+	if {duelList.world::*} is not set:
+		add "world" to {duelList.world::*}
+#--------
+#	SkQuery
+#
+#	Sauvegarde des donnés du joueur (location, vie, faim, stuff, etc...).
+#
+function SaveData(player: player):
+	set {duelPlayer.locate.%{_player}%} to {_player}'s location
+	set {duelPlayer.vie.%{_player}%} to {_player}'s health
+	set {duelPlayer.faim.%{_player}%} to {_player}'s food level
+	set {duelPlayer.head.%{_player}%} to {_player}'s helmet
+	set {duelPlayer.chest.%{_player}%} to {_player}'s chestplate
+	set {duelPlayer.leggs.%{_player}%} to {_player}'s leggings
+	set {duelPlayer.feet.%{_player}%} to {_player}'s boots
+	set {duelPlayer.hand.%{_player}%} to slot 40 of {_player}'s inventory
+	set {_slot} to 0
+	loop 36 times:
+		set {duelPlayer.inv.%{_player}%.%{_slot}%} to slot {_slot} of {_player}'s inventory
+		add 1 to {_slot}
+#
+#	Restitution des données du joueur avant le duel, voir 'SaveData'.
+#
+function RestoreData(player: player):
+	clear {_player}'s inventory
+	execute console command "effect %{_player}% clear"
+	teleport {_player} to {duelPlayer.locate.%{_player}%}
+	set {_player}'s health to {duelPlayer.vie.%{_player}%}
+	set {_player}'s food level to {duelPlayer.faim.%{_player}%}
+	set {_player}'s helmet to {duelPlayer.head.%{_player}%}
+	set {_player}'s chestplate to {duelPlayer.chest.%{_player}%}
+	set {_player}'s leggings to {duelPlayer.leggs.%{_player}%}
+	set {_player}'s boots to {duelPlayer.feet.%{_player}%}
+	set slot 40 of {_player}'s inventory to {duelPlayer.hand.%{_player}%}
+	set {_slot} to 0
+	loop 36 times:
+		set slot {_slot} of {_player}'s inventory to {duelPlayer.inv.%{_player}%.%{_slot}%}
+		add 1 to {_slot}
+#
+#	Démarrage du duel , choix du kit.
+#
+function StartDuel(player: player, step: number, kit: text):
+	if {_step} is 0:
+		#----------
+		#	TuSke
+		open virtual chest inventory with size 1 named "&3Choisissez votre kit" to {_player}
+		set {_slot} to 0
+		loop {duelList.kit::*}:
+			make gui slot {_slot} of {_player} with iron sword named "&dKit n°%{_slot} + 1%" with lore " || ||&9Clique gauche pour obtenir le kit" to close then run function StartDuel({_player}, 1, "%loop-value%")
+			add 1 to {_slot}
+		#----------
+	if {_step} is 1:
+		set {_player}'s health to 10
+		set {_player}'s food level to 20
+		set {_player}'s helmet to {duelKit.helmet.%{_kit}%}
+		set {_player}'s chestplate to {duelKit.chestplate.%{_kit}%}
+		set {_player}'s leggings to {duelKit.leggings.%{_kit}%}
+		set {_player}'s boots to {duelKit.boots.%{_kit}%}
+		set slot 40 of {_player}'s inventory to {duelKit.offhand.%{_kit}%}
+		set {_slot} to 0
+		loop 36 times:
+			set slot {_slot} of {_player}'s inventory to {duelKit.inv.%{_kit}%.%{_slot}%}
+			add 1 to {_slot}
+		set {duelPlayer.kit.%{_player}%} to true
+		set {_uuid} to uuid of {_player}
+		if {duelPlayer.statduel.%{_uuid}%} is not set:
+			set {duelPlayer.statwin.%{_uuid}%} and {duelPlayer.statlose.%{_uuid}%} and {duelPlayer.statduel.%{_uuid}%} to 0
+			add {_uuid} to {duelList.player::*}
+		#----------
+		# SkRayFall
+		if {duelPlayer.statduel.%{_uuid}%} is 0:
+			create bossbar title "&2Victoires &7: &3%{duelPlayer.statwin.%{_uuid}%}%        &cDéfaites &7: &3%{duelPlayer.statlose.%{_uuid}%}%        &6Duels &7: &3%{duelPlayer.statduel.%{_uuid}%}%" and id "duelStats.%{_player}%" for {_player} with progress 0
+		else if {duelPlayer.statduel.%{_uuid}%} is greater than 0:
+			set {_value.%{_player}%} to ({duelPlayer.statwin.%{_uuid}%} * 100) / {duelPlayer.statduel.%{_uuid}%}
+			create bossbar title "&2Victoires &7: &3%{duelPlayer.statwin.%{_uuid}%}%        &cDéfaites &7: &3%{duelPlayer.statlose.%{_uuid}%}%        &6Duels &7: &3%{duelPlayer.statduel.%{_uuid}%}%" and id "duelStats.%{_player}%" for {_player} with progress {_value.%{_player}%}
+		#----------
+#
+#	Duel terminé, suppression des variables des joueurs qui y ont participé.
+#
+function EndDuel(p: player):
+	#----------
+	#	SkRayFall
+	destroy bossbar "duelStats.%{_p}%"
+	#----------
+	clear {duelPlayer.%{_p}%}
+	clear {duelPlayer.provoc.%{_p}%}
+	clear {duelPlayer.kit.%{_p}%}
+	clear {duelPlayer.og.%{_p}%}
+	clear {duelPlayer.lost.%{_p}%}
+#--------
+#
+#	Voir 'on quit'.
+#
+on join:
+	if {duelPlayer.lost.%player%} is set:
+		wait 5 ticks
+		if {duelPlayer.og.%player%} is set:
+			add 1 to {duelPlayer.statlose.%uuid of player%}
+			message "{@prefix} Vous avez quitté un duel, vous avez été considéré comme perdant." to player
+		RestoreData(player)
+		wait 2 ticks
+		EndDuel(player)
+	if player is an op:
+		if text from "http://pastebin.com/raw/iZNsbvxF" is not "{@version}":
+			message "{@prefix} &aMise à jour disponible, faites &c{@commande.admin} update &apour l'installer."
+#
+#	Message ready lorsque un duel va commencer.
+#	Setup des spawns d'arène.
+#
+on chat:
+	if {duelSetup.%player%} is true:
+		set {_setup} to message parsed as text
+		if {_setup} is "setup":
+			cancel event
+			if {duelArene.%{duelSetup.arene.%player%}%.wp1} is not set:
+				set {duelArene.%{duelSetup.arene.%player%}%.wp1} to player's location
+				message "{@prefix} Le premier point d'apparition a été enregistré, faites de même pour le second."
+				stop
+			else if {duelArene.%{duelSetup.arene.%player%}%.wp2} is not set:
+				set {duelArene.%{duelSetup.arene.%player%}%.wp2} to player's location
+				message "{@prefix} Le second point d'apparition a été enregistré avec succès."
+				clear {duelSetup.%player%}
+				clear {duelSetup.arene.%player%}
+		if {_setup} is "exit":
+			cancel event
+			clear {duelSetup.%player%}
+			clear {duelSetup.arene.%player%}
+			message "{@prefix} Vous avez abandonné la configuration des zones d'apparition de l'arène."
+#
+#	A la mort d'un joueur qui est en duel.
+#
+on death of player:
+	if {duelPlayer.og.%player%} is set:
+		set {duelPlayer.lost.%player%} to player
+		add 1 to {duelPlayer.statlose.%uuid of player%}
+		heal victim
+		clear drops
+		message "{@prefix} Vous avez perdu votre duel contre &6%attacker%&2." to player
+#
+#	Si le joueur déconnecte, il sera considéré comme perdant.
+#
+on quit:
+	if {duelPlayer.%player%} is set:
+		set {duelPlayer.lost.%player%} to player
+#
+#	Commande administration des duels.
+#
+command {@commande.admin} [<text=help>] [<text>] [<text>]:
+	permission: {@permission.admin}
+	permission message: {@permission.message}
+	trigger:
+		# Menu d'aide
+		if arg 1 is "help":
+			message "&e--- &6[  &dMenu d'aide sur la configuration des duels &6] &e---"
+			message "&7 - &c{@commande.admin} arene &7: &rGérer les arènes."
+			message "&7 - &c{@commande.admin} kit &7: &rGérer les kits."
+			message "&7 - &c{@commande.admin} world &7: &rGérer les mondes où les duels sont autorisés."
+			message "&7 - &c{@commande.admin} update &7: &rMettre à jour le plugin."
+			message "&7 - &c{@commande.admin} maintenance &7: &rActiver la maintenance du plugin."
+			message "&7 - &c{@commande.admin} toggle &7: &rActive ou non les provocations sur vous."
+		# Menu d'aide arene
+		if arg 1 is "arene":
+			if arg 2 is not set:
+				message "&e--- &6[  &dMenu d'aide sur la configuration des arènes &6] &e---"
+				message "&7 - &c{@commande.admin} arene create <nom> &7: &rCréer une arène."
+				message "&7 - &c{@commande.admin} arene delete <nom> &7: &rSupprimer une arène."
+				message "&7 - &c{@commande.admin} arene spawn <nom> &7: &rGérer le spawn d'une arène."
+				message "&7 - &c{@commande.admin} arene list &7: &rListe d'arène(s) disponible."
+			if arg 2 is "create" or "delete" or "spawn":
+				if arg 3 is not set:
+					message "{@erreur} Vous devez préciser le nom de l'arène."
+					stop
+				# Création d'une arène
+				if arg 2 is "create":
+					loop {duelList.arene::*}:
+						if arg 3 is loop-value:
+							message "{@erreur} Une arène avec le nom &e%arg 3% &cexiste déjà."
+							stop
+					add arg 3 to {duelList.arene::*}
+					set {duelArene.dispo.%arg 3%} to true
+					message "{@prefix} L'arène &e%arg 3% &2a bien été créée. Pensez à créer ses zones d'apparitions."
+				# Suppression d'une arène
+				if arg 2 is "delete":
+					loop {duelList.arene::*}:
+						if arg 3 is loop-value:
+							clear {duelArene.dispo.%arg 3%}
+							clear {duelArene.%arg 3%.wp1} and {duelArene.%arg 3%.wp2}
+							remove arg 3 from {duelList.arene::*}
+							message "{@prefix} L'arène &e%arg 3% &2a bien été supprimée."
+							stop
+					message "{@erreur} L'arène du nom de &e%arg 3% &cn'existe pas."
+				# Setup des points d'apparition de l'arène
+				if arg 2 is "spawn":
+					loop {duelList.arene::*}:
+						if arg 3 is loop-value:
+							set {duelSetup.%player%} to true
+							set {duelSetup.arene.%player%} to arg 3
+							message "{@prefix} Écrivez « &esetup &2» dans le tchat pour régler le premier point d'apparition."
+							message "{@prefix} ou « &eexit &2» si vous souhaitez annuler."
+							stop
+					message "{@erreur} L'arène du nom de &e%arg 3% &cn'existe pas."
+			# Liste d'arène
+			if arg 2 is "list":
+				set {_list} to 0
+				loop {duelList.arene::*}:
+					if {duelArene.%loop-value%.wp1} and {duelArene.%loop-value%.wp2} is set:
+						if {duelArene.dispo.%loop-value%} is true:
+							message "{@prefix} Nom &7: &e%loop-value% &7- &2Configurée &7: &aOui &7- &2Disponible &7: &aOui"
+						else:
+							message "{@prefix} Nom &7: &e%loop-value% &7- &2Configurée &7: &aOui &7- &2Disponible &7: &cNon"
+						if {duelDebug} is true:
+							message "{@debug} Variable &7: &r%{duelArene.dispo.%loop-value%}%"
+						add 1 to {_list}
+					else:
+						message "{@prefix} Nom &7: &e%loop-value% &7- &2Configurée &7: &cNon"
+						add 1 to {_list}
+				message "{@prefix} Nombre d'arène(s) &7: &e%{_list}%"
+		# Menu d'aide kit
+		if arg 1 is "kit":
+			if arg 2 is not set:
+				message "&e--- &6[  &dMenu d'aide sur la configuration des kits &6] &e---"
+				message "&7 - &c{@commande.admin} kit create <nom> &7: &rCréer un kit."
+				message "&7 - &c{@commande.admin} kit delete <nom> &7: &rSupprimer un kit."
+				message "&7 - &c{@commande.admin} kit list &7: &rListe de kit(s) disponible."
+			if arg 2 is "create" or "delete" or "test":
+				if arg 3 is not set:
+					message "{@erreur} Vous devez préciser le nom du kit."
+				# Création d'un kit
+				if arg 2 is "create":
+					loop {duelList.kit::*}:
+						if arg 3 is loop-value:
+							message "{@erreur} Un kit avec le nom &e%arg 3% &cexiste déjà."
+							stop
+					add arg 3 to {duelList.kit::*}
+					set {_slot} to 0
+					loop 36 times:
+						set {duelKit.inv.%arg 3%.%{_slot}%} to slot {_slot} of player's inventory
+						add 1 to {_slot}
+					set {duelKit.offhand.%arg 3%} to slot 40 of player's inventory
+					set {duelKit.helmet.%arg 3%} to player's helmet
+					set {duelKit.chestplate.%arg 3%} to player's chestplate
+					set {duelKit.leggings.%arg 3%} to player's leggings
+					set {duelKit.boots.%arg 3%} to player's boots
+					message "{@prefix} Le kit &e%arg 3% &2a bien été créé."
+				# Suppression d'un kit
+				if arg 2 is "delete":
+					loop {duelList.kit::*}:
+						if arg 3 is loop-value:
+							clear {duelKit.helmet.%arg 3%}
+							clear {duelKit.chestplate.%arg 3%}
+							clear {duelKit.leggings.%arg 3%}
+							clear {duelKit.boots.%arg 3%}
+							set {_slot} to 0
+							loop 36 times:
+								clear {duelKit.inv.%arg 3%.%{_slot}%}
+								add 1 to {_slot}
+							remove arg 3 from {duelList.kit::*}
+							message "{@prefix} Le kit a bien été supprimé."
+							stop
+					message "{@erreur} Aucun kit de ce nom existe."
+				#
+				#	Tester le kit
+				#
+				if arg 2 is "test":
+					loop {duelList.kit::*}:
+						if arg 3 is loop-value:
+							clear player's inventory
+							set player's helmet to {duelKit.helmet.%arg 3%}
+							set player's chestplate to {duelKit.chestplate.%arg 3%}
+							set player's leggings to {duelKit.leggings.%arg 3%}
+							set player's boots to {duelKit.boots.%arg 3%}
+							set slot 40 of player's inventory to {duelKit.offhand.%arg 3%}
+							set {_slot} to 0
+							loop 36 times:
+								set slot {_slot} of player to {duelKit.inv.%arg 3%.%{_slot}%}
+								add 1 to {_slot}
+			# Liste de kit
+			if arg 2 is "list":
+				set {_list} to 0
+				loop {duelList.kit::*}:
+					message "{@prefix} Nom &7: &e%loop-value%"
+					add 1 to {_list}
+				message "{@prefix} Nombre de kit(s) &7: &e%{_list}%"
+		# Menu d'aide world
+		if arg 1 is "world":
+			if arg 2 is not set:
+				message "&e--- &6[  &dMenu d'aide sur la configuration des mondes &6] &e---"
+				message "&7 - &c{@commande.admin} world add <nom> &7: &rAjouter un monde."
+				message "&7 - &c{@commande.admin} world del <nom> &7: &rSupprimer un monde."
+				message "&7 - &c{@commande.admin} world list &7: &rListe des mondes autorisés."
+			if arg 2 is "add" or "del":
+				if arg 3 is not set:
+					message "{@erreur} Vous devez préciser le nom d'un monde."
+				#
+				#	Ajouter un monde
+				#
+				if arg 2 is "add":
+					loop {duelList.world::*}:
+						if arg 3 is loop-value:
+							message "{@erreur} Ce monde est déjà enregistré."
+							stop
+					add arg 3 to {duelList.world::*}
+					message "{@prefix} Le monde a bien été enregistré."
+				#
+				#	Supprimer un monde
+				#
+				if arg 2 is "del":
+					loop {duelList.world::*}:
+						if arg 3 is loop-value:
+							remove arg 3 from {duelList.world::*}
+							message "{@prefix} Ce monde a bien été supprimer de la liste."
+							stop
+					message "{@erreur} Ce monde n'a pas été enregistré, il n'est donc pas possible de le supprimer de la liste."
+			#
+			#	Liste des mondes autorisés.
+			#
+			if arg 2 is "list":
+				set {_list} to 0
+				loop {duelList.world::*}:
+					message "{@prefix} Nom &7: &e%loop-value%"
+					add 1 to {_list}
+				message "{@prefix} Nombre de monde(s) enregistré &7: &e%{_list}%"
+		if arg 1 is "update":
+			if text from "http://pastebin.com/raw/iZNsbvxF" is not "{@version}":
+				message "{@prefix} &aTéléchargement de la mise à jour..."
+				wait 1 tick
+				#----------
+				#	WildSkript
+				download from "http://pastebin.com/raw/PzMRhBLL" to "plugins/Skript/scripts/%script%.sk"
+				#----------
+				message "{@prefix} &aInstallation de la mise à jour..."
+				execute console command "sk reload %script%"
+				wait 1 tick
+				message "{@prefix} &aMise à jour installée avec succès !"
+		if arg 1 is "maintenance":
+			if {duelDebug} is not set:
+				set {duelDebug} to true
+				message "{@prefix} La maintenance des duels a bien été activée."
+			else:
+				message "{@prefix} La maintenance des duels a bien été désactivées."
+				clear {duelDebug}
+		if arg 1 is "toggle":
+			if {duelPlayer.toggle.%player%} is not set:
+				set {duelPlayer.toggle.%player%} to true
+				message "{@prefix} Vous avez désactivé les provocations en duel sur vous."
+			else:
+				clear {duelPlayer.toggle.%player%}
+				message "{@prefix} Vous avez réactivé les provocations de duel sur vous."
+		if arg 1 is "tools":
+			if arg 2 is "arene":
+				loop {duelList.arene::*}:
+					set  {duelArene.dispo.%loop-value%} to true
+				message "{@debug} Disponibilité des arènes réinitialisés."
+#
+#	Tabulation pour la commande {@commande.admin}
+#	SkQuery
+#
+on tab completer for "sduel":
+	if argument at 2 is not set:
+		add "arene" to completions
+		add "kit" to completions
+		add "world" to completions
+		add "update" to completions
+		add "maintenance" to completions
+		add "toggle" to completions
+	if argument at 1 is "arene" or "kit":
+		add "create" to completions
+		add "delete" to completions
+	if argument at 1 is "arene":
+		add "spawn" to completions
+	if argument at 1 is "world":
+		add "add" to completions
+		add "del" to completions
+	if argument at 1 is "arene" or "kit" or "world":
+		add "list" to completions
+#
+#	Commande pour les duels {@commande}
+#
+command {@commande} <player> [<text>]:
+	usage: &9{@commande} &6<pseudo>
+	permission: {@permission.global}
+	permission message: {@permission.message}
+	trigger:
+		if {duelDebug} is not set:																													#	Maintenance désactivé.
+		# loop {testing::*}:
+			# if player is loop-value:
+				# set {_player} to loop-value
+				# stop loop
+		# if {_player} is player:
+			if {duelList.arene::*} and {duelList.kit::*} and {duelList.world::*} is set:											#	Config des duels.
+				if arg 2 is not set:																													#	
+					if arg 1 has permission "{@permission.global}":
+						if {duelPlayer.toggle.%arg 1%} is not set:																			#	Joueur ayant activer les provocations.
+							if arg 1 is not player:																									#	Si le joueur envoi une provocation à lui-même
+								set {_world} to 0																										#
+								loop {duelList.world::*}:																							#	Regarde si les joueurs sont dans un monde autorisé.
+									if player's world is loop-value:
+										add 1 to {_world}
+									if arg 1's world is loop-value:
+										add 1 to {_world}
+								if {_world} is 2:																										#	Les 2 joueurs sont dans un monde autorisé.
+									if {duelPlayer.%arg 1%} is not set:																		#	La cible n'est pas en duel.
+										if {duelPlayer.%player%} is not set:																	#	Le joueur n'est pas en duel.
+											if {duelPlayer.provoc.%arg 1%} is not set:														#	La cible n'est pas provoqué.
+												if {duelPlayer.provoc.%player%} is not set:													#	Le joueur n'est pas provoqué
+													set {duelPlayer.provoc.%player%} and {duelPlayer.provoc.%arg 1%} to now
+													set {duelPlayer.provoc.%player%.%arg 1%} to false
+													broadcast "{@prefix} &6%player% &9provoque en duel &6%arg 1% &9!"
+													message "{@prefix} &6%arg 1% &2a 60 secondes pour répondre à votre provocation."
+													message "{@prefix} &6%player% &2vous a envoyé une provocation, vous avez 60 secondes pour y répondre." to arg 1
+													execute console command "tellraw %arg 1% ["""",{""text"":""╔════════════════════════════════════╗"",""bold"":true,""color"":""blue""},{""text"":""\n    ""},{""text"":""%player%"",""color"":""gold""},{""text"":"" ""},{""text"":""vous a provoqué en duel, votre réponse"",""color"":""dark_aqua""},{""text"":"" ""},{""text"":"":"",""color"":""gray""},{""text"":""\n          ""},{""text"":""(Cliquer sur les réponses ci-dessous)"",""italic"":true,""color"":""light_purple""},{""text"":""\n\n                 ""},{""text"":""ᐅ"",""color"":""dark_green""},{""text"":""  ""},{""text"":""Accepter"",""underlined"":true,""color"":""dark_green"",""clickEvent"":{""action"":""run_command"",""value"":""{@commande} %player% accepte""},""hoverEvent"":{""action"":""show_text"",""value"":""&3Cliquer ici pour &2accepter &3le duel de &6%player%""}},{""text"":""\n                 ""},{""text"":""ᐅ"",""color"":""red""},{""text"":""  ""},{""text"":""Refuser"",""underlined"":true,""color"":""red"",""clickEvent"":{""action"":""run_command"",""value"":""{@commande} %player% refuse""},""hoverEvent"":{""action"":""show_text"",""value"":""&3Cliquer ici pour &crefuser &3le duel de &6%player%""}},{""text"":""\n\n""},{""text"":""╚════════════════════════════════════╝"",""bold"":true,""color"":""blue""}]"
+													# execute console command "tellraw %arg 1% ["""",{""text"":""╔════════════════════════════════════╗"",""bold"":true,""color"":""blue""},{""text"":""\n    ""},{""text"":""%player%"",""color"":""gold""},{""text"":"" ""},{""text"":""vous a provoqué en duel, votre réponse"",""color"":""dark_aqua""},{""text"":"" ""},{""text"":"":"",""color"":""gray""},{""text"":""\n          ""},{""text"":""(Cliquer sur les réponses ci-dessous)"",""italic"":true,""color"":""light_purple""},{""text"":""\n\n                 ""},{""text"":""ᐅ"",""color"":""dark_green""},{""text"":""  ""},{""text"":""Accepter"",""underlined"":true,""color"":""dark_green"",""clickEvent"":{""action"":""run_command"",""value"":""{@commande} %player% accepte""},""hoverEvent"":{""action"":""show_text"",""value"":""&3Cliquer ici pour &2accepter &3le duel de &6%player%""}},{""text"":""\n                 ""},{""text"":""ᐅ"",""color"":""red""},{""text"":""  ""},{""text"":""Refuser"",""underlined"":true,""color"":""red"",""clickEvent"":{""action"":""run_command"",""value"":""{@commande} %player% refuse""},""hoverEvent"":{""action"":""show_text"",""value"":""&3Cliquer ici pour &crefuser &3le duel de &6%player%""}},{""text"":""\n\n""},{""text"":""╚════════════════════════════════════╝"",""bold"":true,""color"":""blue""}]"
+													loop 60 times:																					#	60 secondes pour répondre à la provocation.
+														if {duelPlayer.provoc.%player%.%arg 1%} is not set:
+															message "{@prefix} &6%arg 1% &2a refusé votre duel."
+															stop
+														if {duelPlayer.provoc.%player%.%arg 1%} is true:
+															set {_ready} to true
+															message "{@prefix} &6%arg 1% &2a accepté votre duel, vous allez être téléporté dans quelques instants."
+															stop loop
+														wait 1 seconds
+													if {_ready} is true:																				#	Provocation accepté.
+														loop {duelList.arene::*}:																	#	Les arènes disponibles pour un duel.
+															if {duelArene.dispo.%loop-value%} is true:
+																set {duelArene.%player%.%arg 1%} to loop-value
+																set {duelArene.dispo.%loop-value%} to false
+																set {_arene} to true
+																stop loop
+														if {_arene} is set:																				#	Une arène est dispo.
+															clear {duelPlayer.provoc.%player%.%arg 1%}
+															SaveData(player)																		#	Sauvegarde donnée joueur.
+															SaveData(arg 1)																			#	Sauvegarde donnée cible.
+															wait 1 seconds
+															teleport player to {duelArene.%{duelArene.%player%.%arg 1%}%.wp1}
+															teleport arg 1 to {duelArene.%{duelArene.%player%.%arg 1%}%.wp2}
+															apply jump boost 250 to player and arg 1 for 999 days
+															apply slowness 250 to player and arg 1 for 999 days
+															apply blindness 250 to player and arg 1 for 999 days
+															apply resistance 250 to player and arg 1 for 999 days
+															message "{@prefix} En attente des joueurs..." to player and arg 1
+															wait 4 seconds																			#	4 secondes avant démarrage du duel.														
+															StartDuel(player, 0, " ")
+															StartDuel(arg 1, 0, " ")
+															loop 15 times:																		#	15 secondes pour choisir un kit.
+																if {duelPlayer.kit.%player%} and {duelPlayer.kit.%arg 1%} is set:
+																	set {_duel} to true
+																	stop loop
+																wait 1 seconds
+															if {_duel} is set:																		#	Les 2 joueurs ont choisi un kit.
+																set {duelPlayer.og.%player%} and {duelPlayer.og.%arg 1%} to true
+																remove jump boost from player and arg 1
+																remove slowness from player and arg 1
+																remove blindness from player and arg 1
+																remove resistance from player and arg 1
+																message "{@prefix} Que le duel commence !!" to player and arg 1
+																loop 300 times:																	#	Regarde le duel pendant 5 minutes.
+																	if {duelPlayer.lost.%player%} or {duelPlayer.lost.%arg 1%} is set:				#	Si l'un des 2 joueurs a perdu.
+																		set {duelArene.dispo.%{duelArene.%player%.%arg 1%}%} to true
+																		if {duelPlayer.lost.%player%} is set:
+																			message "{@prefix} Vous avez gagné votre duel contre &6%player%&2." to arg 1
+																			add 1 to {duelPlayer.statwin.%uuid of arg 1%}
+																		else if {duelPlayer.lost.%arg 1%} is set:
+																			message "{@prefix} Vous avez gagné votre duel contre &6%arg 1%&2."
+																			add 1 to {duelPlayer.statwin.%uuid of player%}
+																		broadcast "{@prefix} Le duel entre &6%player% &2et &6%arg 1% &2est terminé."
+																		add 1 to {duelPlayer.statduel.%uuid of player%} and {duelPlayer.statduel.%uuid of arg 1%}
+																		if arg 1 is online:
+																			RestoreData(arg 1)
+																			wait 2 ticks
+																			EndDuel(arg 1)
+																		if player is online:
+																			RestoreData(player)
+																			wait 2 ticks
+																			EndDuel(player)
+																		stop
+																	wait 1 seconds
+																if {duelPlayer.lost.%player%} or {duelPlayer.lost.%arg 1%} is not set:
+																	set {duelArene.dispo.%{duelArene.%player%.%arg 1%}%} to true
+																	broadcast "{@prefix} Le duel entre &6%player% &2et &6%arg 1% &2a été annulé. Temps écoulé."
+																	add 1 to {duelPlayer.statduel.%uuid of player%} and {duelPlayer.statduel.%uuid of arg 1%}
+																	if player is online:
+																		RestoreData(player)
+																		wait 2 ticks
+																		EndDuel(player)
+																	if arg 1 is online:
+																		RestoreData(arg 1)
+																		wait 2 ticks
+																		EndDuel(arg 1)
+															else if {_duel} is not set:															#	L'un des 2 joueurs (ou les 2) n'a pas choisi de kit.
+																if {duelPlayer.kit.%arg 1%} is not set:
+																	message "{@prefix} &6%arg 1% &2n'ayant pas choisi son kit, le duel est annulé."
+																if {duelPlayer.kit.%player%} is not set:
+																	message "{@prefix} &6%player% &2n'ayant pas choisi son kit, le duel est annulé." to arg 1
+																set {duelArene.dispo.%{duelArene.%player%.%arg 1%}%} to true
+																if player is online:
+																	RestoreData(player)
+																	wait 2 ticks
+																	EndDuel(player)
+																if arg 1 is online:
+																	RestoreData(arg 1)
+																	wait 2 ticks
+																	EndDuel(arg 1)
+																broadcast "{@prefix} Le duel entre &6%player% &2et &6%arg 1% &2a été annulé."
+														else if {_arene} is not set:																# Aucune arène disponible.
+															EndDuel(player)
+															wait 2 ticks
+															EndDuel(arg 1)
+															clear {duelPlayer.provoc.%player%.%arg 1%}
+															message "{@erreur} Aucune arène n'est disponible pour votre duel. Réessayez plus tard." to player and arg 1
+													else if {_ready} is not set:																	# N'a pas répondu a la provocation après 60 secondes.
+														clear {duelPlayer.provoc.%player%.%arg 1%}
+														clear {duelPlayer.provoc.%arg 1%}
+														message "{@prefix} &6%arg 1% &2n'a pas répondu à votre provocation."
+														message "{@prefix} Vous n'avez pas répondu à la provocation de &6%player%" to arg 1
+												else if {duelPlayer.provoc.%player%} was less than a minute:
+													message "{@erreur} Vous avez envoyé ou reçu une provocation il y a moins d'une minute."
+												else if {duelPlayer.provoc.%player%} was more than a minute:
+													clear {duelPlayer.provoc.%player%}
+											else:
+												message "{@erreur} &6%arg 1% &cest déjà sous l'effet d'une provocation, il ne peut donc pas recevoir la votre."
+										else:
+											message "{@erreur} Vous êtes déjà engagé dans un duel."
+									else:
+										message "{@erreur} &6%arg 1% &cest déjà engagé dans un duel."
+								else:
+									message "{@erreur} Vous ou &6%arg 1% &cn'êtes pas dans un monde qui autorise les duels."
+							else:
+								message "{@erreur} Vous ne pouvez envoyer une provocation à vous même."
+						else:
+							message "{@erreur} &6%arg 1% &ca désactivé les provocations."
+					else:
+						message "{@erreur} &6%arg 1% &cne peut pas reçevoir de provocation."
+				if arg 2 is "accepte" or "refuse":																								#	Cliquer sur "accepter" ou "refuser" lors de la réception d'une provocation.
+					if {duelPlayer.provoc.%arg 1%.%player%} is set:																	#	Regarde si la provocation reçu provient du joueur qui a lancé la provocation.
+						if arg 2 is "accepte":
+							if {duelPlayer.%arg 1%} is not set:																			#	L'attaquant n'est pas en duel.
+								if {duelPlayer.provoc.%arg 1%.%player%} is false:													#	N'a pas encore accepté le duel.
+									set {duelPlayer.provoc.%arg 1%.%player%} to true
+									set {duelPlayer.%player%} and {duelPlayer.%arg 1%} to true
+									message "{@prefix} Vous avez accepté le duel de &6%arg 1%&2, vous allez être téléporté dans quelques instants."
+							else:
+								message "{@erreur} &6%arg 1% &ca déjà accepté un duel."
+						if arg 2 is "refuse":
+							if {duelPlayer.%player%} and {duelPlayer.%arg 1%} is set:
+								message "{@erreur} Vous ne pouvez plus refuser le duel car vous l'avez déjà accepté."
+							else:
+								clear {duelPlayer.provoc.%arg 1%.%player%}
+								clear {duelPlayer.provoc.%arg 1%} and {duelPlayer.provoc.%player%}
+								message "{@prefix} Vous avez refusé le duel de &6%arg 1%"
+					else:
+						message "{@erreur} Vous avez déjà répondu à cette provocation."
+			else:
+				message "{@erreur} La configuration des duels n'est pas complète, veuillez contacter un administrateur."
+		else:
+			message "{@erreur} Les duels sont en maintenance."
