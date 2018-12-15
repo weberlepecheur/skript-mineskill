@@ -8,6 +8,7 @@
 #------------------------------------------------
 #
 #			1 world 2 kit 3 arene 4 joueur
+#			1 option 11 world 12 kit 13 arene 2 joueur
 #
 #------------------------------------------------
 
@@ -30,37 +31,38 @@ options:
 	gui.adversaire.invitation.refuser : §6%{_v}% §ca refusé votre invitation en duel.
 	gui.adversaire.invitation.erreur.state.2 : §cVotre adversaire est déjà en duel.
 	gui.kit.titre : §3Choisissez votre kit
-	gui.kit.nom : §dKit de %{duel::2::%{_i}%::1}%
+	gui.kit.nom : §dKit de %{duel::1::2::%{_i}%::1}%
 	gui.kit.description : §9Clic pour choisir ce kit.
 	
-	message.permission : §cVous n'avez pas la permission d'utiliser cette commande.
+	message.permission.soi : §cVous n'avez pas la permission d'utiliser cette commande.
+	message.permission.autre : §cVotre adversaire ne possèdent pas la permission pour reçevoir l'invitation.
 	message.maintenance : §cLes duels sont en maintenance.
 	
 function PlayerData(player: player, type: text) :: boolean:
 	{_type} is "save":
-		add {_player} to {duel::4::*}
-		loop {duel::4::*}:
+		add {_player} to {duel::2::*}
+		loop {duel::2::*}:
 			loop-value is {_player}
-			set {duel::4::%loop-index%::1} to {_player}'s location
-			set {duel::4::%loop-index%::2} to {_player}'s gamemode
-			set {duel::4::%loop-index%::3} to {_player}'s health
-			set {duel::4::%loop-index%::4} to {_player}'s food level
-			# set {duel::4::%loop-index%::5} to {_player}'s potion effect	# TODO: Récupérer les données sur PotionEffect.LivingEntity
+			set {duel::2::%loop-index%::1} to {_player}'s location
+			set {duel::2::%loop-index%::2} to {_player}'s gamemode
+			set {duel::2::%loop-index%::3} to {_player}'s health
+			set {duel::2::%loop-index%::4} to {_player}'s food level
+			# set {duel::2::%loop-index%::5} to {_player}'s potion effect	# TODO: Récupérer les données sur PotionEffect.LivingEntity
 			loop 41 times:
-				set {duel::4::%loop-index-1%::%(loop-number + 4)%} to slot (loop-number - 1) of {_player}'s inventory
+				set {duel::2::%loop-index-1%::%(loop-number + 4)%} to slot (loop-number - 1) of {_player}'s inventory
 			return true
 			stop
 	{_type} is "restore":
-		loop {duel::4::*}:
+		loop {duel::2::*}:
 			loop-value is {_player}
-			teleport {_player} to {duel::4::%loop-index%::1}
+			teleport {_player} to {duel::2::%loop-index%::1}
 			remove all potion effect from {_player}
-			set {_player}'s gamemode to {duel::4::%loop-index%::2}
-			set {_player}'s health to {duel::4::%loop-index%::3}
-			set {_player}'s food level to {duel::4::%loop-index%::4}
-			# set {_player}'s potion effect to {duel::4::%loop-index%::5}	# TODO: Récupérer les données sur PotionEffect.LivingEntity
+			set {_player}'s gamemode to {duel::2::%loop-index%::2}
+			set {_player}'s health to {duel::2::%loop-index%::3}
+			set {_player}'s food level to {duel::2::%loop-index%::4}
+			# set {_player}'s potion effect to {duel::2::%loop-index%::5}	# TODO: Récupérer les données sur PotionEffect.LivingEntity
 			loop 41 times:
-				set slot (loop-number - 1) of {_player}'s inventory to {duel::4::%loop-index-1%::%(loop-number + 4)%}
+				set slot (loop-number - 1) of {_player}'s inventory to {duel::2::%loop-index-1%::%(loop-number + 4)%}
 			return true
 			stop
 	{_type} contain "kit":
@@ -80,15 +82,19 @@ function PlayerData(player: player, type: text) :: boolean:
 			stop
 	return false	# Return false si le joueur/kit n'existe pas
 
-function DuelState(player: player, state: number) :: boolean:
-	{_state} = 0:	# Maintenance ?
+# 0 maintenance 
+function DuelState(player: player, state: number):: boolean:
+	{_state} = 0:	# Maintenance ?	# TODO: Rendre plus clair ce morceau
 		loop 3 times:
-			size of {duel::%loop-number%::*} = 0:
+			size of {duel::1::%loop-number%::*} = 0:	# world, kit, arene set?
 				return false
 				stop #
+		{duel::1::4} is false:	# mode maintenance
+			return false
+			stop
 		return true
 	{_state} = 1:	# Choix de l'adversaire
-		set {_loop} to size of all players
+		set {_loop} to online players count
 		set {_size} to 1
 		while {_pass} isn't set:	# TODO: Rendre le calcul plus efficace (plus court?)
 			{_loop} <= 9:
@@ -99,15 +105,15 @@ function DuelState(player: player, state: number) :: boolean:
 		open virtual chest inventory with size {_size} named "{@gui.adversaire.titre}" to {_player}
 		set {_slot} to 0	# Il y a plus efficace mais en attendant..
 		loop all players:
-			set {_v} to loop-player parsed as offlineplayer
-			make gui slot {_slot} of {_player} with player head named "%{_v}%" with lore "§r" and "{@gui.adversaire.description}" to run:
+			set {_v} to loop-player parsed as offlineplayer	# Parse nécessaire?
+			make gui slot {_slot} of {_player} with player head named "%{_v}%" with lore "§r" and "{@gui.adversaire.description}" to run:	# player head, tete personnalisé broken depuis 2.3-ExprSkull.java
 				close {_player}'s inventory
-				{duel::4::*} do not contain {_v}:
+				{duel::2::*} do not contain {_v}:
 					send "{@gui.adversaire.invitation.envoie}"
 				else:
 					send "{@gui.adversaire.invitation.erreur.state.2}"
 	{_state} = 2:	# Choix du kit
-		set {_loop} to size of {duel::2::*}
+		set {_loop} to size of {duel::1::2::*}
 		set {_size} to 1
 		while {_pass} isn't set:	# TODO: Rendre le calcul plus efficace (plus court?)
 			{_loop} <= 9:
@@ -116,15 +122,17 @@ function DuelState(player: player, state: number) :: boolean:
 				remove 9 from {_loop}
 				add 1 to {_size}
 		open virtual chest inventory with size {_size} named "{@gui.kit.titre}" to {_player}
-		loop {duel::2::*}:
+		loop {duel::1::2::*}:
 			set {_i} to loop-index parsed as number
-			make gui slot ({_i} - 1) of {_player} with {duel::2::%{_i}%::2} named "{@gui.kit.nom}" with lore "§r" and "{@gui.kit.description}" to run:
+			make gui slot ({_i} - 1) of {_player} with {duel::1::2::%{_i}%::2} named "{@gui.kit.nom}" with lore "§r" and "{@gui.kit.description}" to run:
 				return PlayerData({_player}, "kit||%{_i}%")
 
-command /{@commande.global} <player> [<text>]:
-	usage: §9{@commande.global} §6<pseudo>
+command /{@commande.global} [<player>]:
 	permission: {@permission.global}
-	permission message: {@message.permission}
+	permission message: {@message.permission.soi}
 	trigger:
-		
+		DuelState(player, 0) is true:
+			
+		else:
+			send "{@prefix.erreur} {@message.maintenance}"
 				
