@@ -7,7 +7,7 @@
 #
 #------------------------------------------------
 #
-#			
+#			1 world 2 kit 3 arene 4 joueur
 #
 #------------------------------------------------
 
@@ -23,6 +23,12 @@ options:
 	prefix.debug : §e[§dDEBUG§e]
 	prefix.erreur : §e[§4Erreur§e]
 	
+	gui.adversaire.titre : §3Choisissez votre adversaire
+	gui.adversaire.description : §9Clic pour choisir cet adversaire.
+	gui.adversaire.invitation.envoie : §2Vous avez envoyé une invitation en duel à §6%{_v}%§2.
+	gui.adversaire.invitation.accepter : §6%{_v}% §9a accepté votre invitation en duel.
+	gui.adversaire.invitation.refuser : §6%{_v}% §ca refusé votre invitation en duel.
+	gui.adversaire.invitation.erreur.state.2 : §cVotre adversaire est déjà en duel.
 	gui.kit.titre : §3Choisissez votre kit
 	gui.kit.nom : §dKit de %{duel::2::%{_i}%::1}%
 	gui.kit.description : §9Clic pour choisir ce kit.
@@ -32,29 +38,29 @@ options:
 	
 function PlayerData(player: player, type: text) :: boolean:
 	{_type} is "save":
-		add {_player} to {duel::3::*}
-		loop {duel::3::*}:
+		add {_player} to {duel::4::*}
+		loop {duel::4::*}:
 			loop-value is {_player}
-			set {duel::3::%loop-index%::1} to {_player}'s location
-			set {duel::3::%loop-index%::2} to {_player}'s gamemode
-			set {duel::3::%loop-index%::3} to {_player}'s health
-			set {duel::3::%loop-index%::4} to {_player}'s food level
-			# set {duel::3::%loop-index%::5} to {_player}'s potion effect	# TODO: Récupérer les données sur PotionEffect.LivingEntity
+			set {duel::4::%loop-index%::1} to {_player}'s location
+			set {duel::4::%loop-index%::2} to {_player}'s gamemode
+			set {duel::4::%loop-index%::3} to {_player}'s health
+			set {duel::4::%loop-index%::4} to {_player}'s food level
+			# set {duel::4::%loop-index%::5} to {_player}'s potion effect	# TODO: Récupérer les données sur PotionEffect.LivingEntity
 			loop 41 times:
-				set {duel::3::%loop-index-1%::%(loop-number + 4)%} to slot (loop-number - 1) of {_player}'s inventory
+				set {duel::4::%loop-index-1%::%(loop-number + 4)%} to slot (loop-number - 1) of {_player}'s inventory
 			return true
 			stop
 	{_type} is "restore":
-		loop {duel::3::*}:
+		loop {duel::4::*}:
 			loop-value is {_player}
-			teleport {_player} to {duel::3::%loop-index%::1}
+			teleport {_player} to {duel::4::%loop-index%::1}
 			remove all potion effect from {_player}
-			set {_player}'s gamemode to {duel::3::%loop-index%::2}
-			set {_player}'s health to {duel::3::%loop-index%::3}
-			set {_player}'s food level to {duel::3::%loop-index%::4}
-			# set {_player}'s potion effect to {duel::3::%loop-index%::5}	# TODO: Récupérer les données sur PotionEffect.LivingEntity
+			set {_player}'s gamemode to {duel::4::%loop-index%::2}
+			set {_player}'s health to {duel::4::%loop-index%::3}
+			set {_player}'s food level to {duel::4::%loop-index%::4}
+			# set {_player}'s potion effect to {duel::4::%loop-index%::5}	# TODO: Récupérer les données sur PotionEffect.LivingEntity
 			loop 41 times:
-				set slot (loop-number - 1) of {_player}'s inventory to {duel::3::%loop-index-1%::%(loop-number + 4)%}
+				set slot (loop-number - 1) of {_player}'s inventory to {duel::4::%loop-index-1%::%(loop-number + 4)%}
 			return true
 			stop
 	{_type} contain "kit":
@@ -75,12 +81,35 @@ function PlayerData(player: player, type: text) :: boolean:
 	return false	# Return false si le joueur/kit n'existe pas
 
 function DuelState(player: player, state: number) :: boolean:
-	{_state} = 0:
-		{}
-	{_state} = 1:
+	{_state} = 0:	# Maintenance ?
+		loop 3 times:
+			size of {duel::%loop-number%::*} = 0:
+				return false
+				stop #
+		return true
+	{_state} = 1:	# Choix de l'adversaire
+		set {_loop} to size of all players
+		set {_size} to 1
+		while {_pass} isn't set:	# TODO: Rendre le calcul plus efficace (plus court?)
+			{_loop} <= 9:
+				set {_pass} to true
+			else:
+				remove 9 from {_loop}
+				add 1 to {_size}
+		open virtual chest inventory with size {_size} named "{@gui.adversaire.titre}" to {_player}
+		set {_slot} to 0	# Il y a plus efficace mais en attendant..
+		loop all players:
+			set {_v} to loop-player parsed as offlineplayer
+			make gui slot {_slot} of {_player} with player head named "%{_v}%" with lore "§r" and "{@gui.adversaire.description}" to run:
+				close {_player}'s inventory
+				{duel::4::*} do not contain {_v}:
+					send "{@gui.adversaire.invitation.envoie}"
+				else:
+					send "{@gui.adversaire.invitation.erreur.state.2}"
+	{_state} = 2:	# Choix du kit
 		set {_loop} to size of {duel::2::*}
 		set {_size} to 1
-		while {_pass} isn't set:	# TODO: Améliorer ce calcul
+		while {_pass} isn't set:	# TODO: Rendre le calcul plus efficace (plus court?)
 			{_loop} <= 9:
 				set {_pass} to true
 			else:
