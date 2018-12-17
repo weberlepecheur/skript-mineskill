@@ -26,13 +26,18 @@ options:
 	
 	gui.adversaire.titre : §3Choisissez votre adversaire
 	gui.adversaire.description : §9Clic pour choisir cet adversaire.
-	gui.adversaire.invitation.envoie : §2Vous avez envoyé une invitation en duel à §6%{_v}%§2.
-	gui.adversaire.invitation.accepter : §6%{_v}% §9a accepté votre invitation en duel.
-	gui.adversaire.invitation.refuser : §6%{_v}% §ca refusé votre invitation en duel.
-	gui.adversaire.invitation.erreur.state.2 : §cVotre adversaire est déjà en duel.
+	gui.adversaire.confirmation : §3Affronter §6%{_v}% §3?
+	gui.adversaire.confirmation.oui : §2Oui
+	gui.adversaire.confirmation.non : §4Non
+	
 	gui.kit.titre : §3Choisissez votre kit
 	gui.kit.nom : §dKit de %{duel::1::2::%{_i}%::1}%
 	gui.kit.description : §9Clic pour choisir ce kit.
+	
+	message.adversaire.invitation.envoie : §2Vous avez envoyé une invitation en duel à §6%{_v}%§2.
+	message.adversaire.invitation.accepter : §6%{_v}% §9a accepté votre invitation en duel.
+	message.adversaire.invitation.refuser : §6%{_v}% §ca refusé votre invitation en duel.
+	message.adversaire.invitation.erreur.state.2 : §cVotre adversaire est déjà en duel.
 	
 	message.permission.soi : §cVous n'avez pas la permission d'utiliser cette commande.
 	message.permission.autre : §cVotre adversaire ne possèdent pas la permission pour reçevoir l'invitation.
@@ -89,10 +94,11 @@ function DuelState(player: player, state: number):: boolean:
 			size of {duel::1::%loop-number%::*} = 0:	# world, kit, arene set?
 				return false
 				stop #
-		{duel::1::4} is false:	# mode maintenance
-			return false
-			stop
-		return true
+		# {duel::1::4} is false:	# mode maintenance
+			# return false
+			# stop
+		# return true
+		return false if {duel::1::4} is false else true	# À tester, otherwise 'set {_return} to false is {duel::1::4} is false else true'
 	{_state} = 1:	# Choix de l'adversaire
 		set {_loop} to online players count
 		set {_size} to 1
@@ -107,11 +113,18 @@ function DuelState(player: player, state: number):: boolean:
 		loop all players:
 			set {_v} to loop-player parsed as offlineplayer	# Parse nécessaire?
 			make gui slot {_slot} of {_player} with player head named "%{_v}%" with lore "§r" and "{@gui.adversaire.description}" to run:	# player head, tete personnalisé broken depuis 2.3-ExprSkull.java
-				close {_player}'s inventory
-				{duel::2::*} do not contain {_v}:
-					send "{@gui.adversaire.invitation.envoie}"
-				else:
-					send "{@gui.adversaire.invitation.erreur.state.2}"
+				open virtual chest inventory with size 3 named "{@gui.adversaire.confirmation}" to {_player}
+				loop 9 times:
+					make a gui slot (loop-number - 1) of {_player} with yellow stained glass pane named "§r" to nothing
+					make a gui slot (loop-number + 17) of {_player} with yellow stained glass pane named "§r" to nothing
+				make a gui slot 12 of {_player} with green wool named "{@gui.adversaire.confirmation.oui}" to run:
+					close {_player}'s inventory
+					{duel::2::*} do not contain {_v}:
+						send "{@message.adversaire.invitation.envoie}"
+					else:
+						send "{@message.adversaire.invitation.erreur.state.2}"
+				make a gui slot 14 of {_player} with red wool named "{@gui.adversaire.confirmation.non}" to run:
+					DuelState({_player}, 1)
 	{_state} = 2:	# Choix du kit
 		set {_loop} to size of {duel::1::2::*}
 		set {_size} to 1
