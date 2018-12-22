@@ -109,8 +109,7 @@ function menuGui(player: player, menu: integer, page: integer):
 			send " " to {_player}
 		make a gui slot 19 of {_player} with book and quill named "§a§lNos services publics" with lore "§3Téléportation vers nos services publics", "§r", "§f• Banque", "§f• Gare", "§f• Casino", "§f• AMPE", "§f• Mairie", "§f• Hôtel", "§f• Emmacube" and "§r" to run function menuGui({_player}, 2, 0)
 		make a gui slot 25 of {_player} with enchanted book named "§c§lI§e§ln§a§lf§3§lo§9§ls §5§lV§7§lI§4§lP" with lore "§r" to run function menuGui({_player}, 4, 0)
-		# make a gui slot 31 of {_player} with skull of {_player} named "§6%{_player}%" with lore "{@lorePlayer}" to nothing
-		make a gui slot 31 of {_player} with player head named "§6%{_player}%" with lore "{@lorePlayer}" to nothing
+		make a gui slot 31 of {_player} with skull of {_player} named "§6%{_player}%" with lore "{@lorePlayer}" to nothing
 		make a gui slot 35 of {_player} with oak wood door named "§fFermer" to close
 	else if {_menu} is 1:
 		open virtual chest inventory with size 3 named "§3Nos villes" to {_player}
@@ -124,7 +123,7 @@ function menuGui(player: player, menu: integer, page: integer):
 		make a gui slot 13 of {_player} with spruce wood planks named "§e• WestTown •" with lore "§r", "§eWestTown, la ville du Far West" and "§2Maire§7: §eTHEivrogne99" to execute console command "warp westtown %{_player}%"
 		make a gui slot 14 of {_player} with spruce log named "§c• Caylus •" with lore "§r", "§eCaylus, la ville médiévale" and "§2Maire§7: §eTHEivrogne99" to execute console command "warp caylus %{_player}%"
 		make a gui slot 15 of {_player} with sea lantern named "§d• Utopia •" with lore "§r", "§eUtopia, la ville du futur" and "§2Maire§7: §eLE STAFF" to execute console command "warp utopia %{_player}%"
-		make a gui slot 25 of {_player} with skeleton head named "§fPrécédent" to run function menuGui({_player}, 0, 0)
+		make a gui slot 25 of {_player} with skull of ("MHF_ArrowLeft" parsed as offline player) named "§fPrécédent" to run function menuGui({_player}, 0, 0)
 		make a gui slot 26 of {_player} with oak wood door named "§fFermer" to close
 	else if {_menu} is 2:
 		open virtual chest inventory with size 4 named "§3Nos services publiques" to {_player}
@@ -147,7 +146,7 @@ function menuGui(player: player, menu: integer, page: integer):
 			give a paper of unbreaking 0 without nbt named "§d§lPapier imbibé de magie" with lore "§ePermet d'ouvrir le /menu" and "§r" to player
 		make a gui slot 21 of {_player} with diamond named "§6§lSalle d'échange" with lore "§r", "§eVenez faire vos transactions !", "§dNos salles spécifiques sécurisées !", "§r" and "§4En maintenance !" to execute console command "warp echange %{_player}%"
 		make a gui slot 22 of {_player} with gold nugget named "§6§lL'Emmacube" with lore "§r", "§eCherche vos récompenses d'événements ? Par ici !" and "§r" to execute console command "warp emmacube %{_player}%"
-		make a gui slot 34 of {_player} with skeleton head named "§fPrécédent" to run function menuGui({_player}, 0, 0)
+		make a gui slot 34 of {_player} with skull of ("MHF_ArrowLeft" parsed as offline player) named "§fPrécédent" to run function menuGui({_player}, 0, 0)
 		make a gui slot 35 of {_player} with oak wood door named "§fFermer" to close
 	else if {_menu} is 3:
 		open virtual chest inventory with size 4 named "§eNos tutoriels" to {_player}
@@ -156,21 +155,18 @@ function menuGui(player: player, menu: integer, page: integer):
 			make a gui slot (loop-number + 26) of {_player} with yellow stained glass pane named "§r" to nothing
 		make a gui slot 9, 17, 18 and 26 of {_player} with yellow stained glass pane named "§r" to nothing
 		make a gui slot 10 of {_player} with floor sign named "§eLes commandes basiques" with lore "§r" and "§fAccéder au lien" to run:
-			# WildSkript
 			close {_player}'s inventory
 			send " " to {_player}
 			send "§4§l→   §eLes commandes basiques §7:" to {_player}
 			send "§4§l→   <link:https://mineskill.fr/forum/threads/jouer-sur-le-serveur-semi-rp.1294/><tooltip:Clique sur cette phrase>§3Clique ici pour être redirigé vers le tutoriel sur notre forum.<reset>" to {_player}
 			send " " to {_player}
 		make a gui slot 11 of {_player} with tripwire hook named "§eLes commandes de protections" with lore "§r" and "§fAccéder au lien" to run:
-			# WildSkript
 			close {_player}'s inventory
 			send " " to {_player}
 			send "§4§l→   §eLes commandes de protections §7:" to {_player}
 			send "§4§l→   <link:https://mineskill.fr/forum/threads/jouer-sur-le-serveur-semi-rp.1294/><tooltip:Clique sur cette phrase>§3Clique ici pour être redirigé vers le tutoriel sur notre forum.<reset>" to {_player}
 			send " " to {_player}
 		make a gui slot 12 of {_player} with rose bush named "§eLes commandes de mariage" with lore "§r" and "§fAccéder au lien" to run:
-			# WildSkript
 			close {_player}'s inventory
 			set {_temp} to "{@loreMarriage}"
 			set {_send::*} to {_temp} split by "||"
@@ -180,21 +176,18 @@ function menuGui(player: player, menu: integer, page: integer):
 				send "%loop-value%" to {_player}
 			send " " to {_player}
 		make a gui slot 13 of {_player} with emerald named "§eLes commandes de l'hôtel des ventes" with lore "§r" and "§fAccéder au lien" to run:
-			# WildSkript
 			close {_player}'s inventory
 			send " " to {_player}
 			send "§4§l→   §eLes commandes de l'hôtel des ventes §7:" to {_player}
 			send "§4§l→   <link:https://mineskill.fr/hotel-ventes/><tooltip:Clique sur cette phrase>§3Clique ici pour être redirigé vers le tutoriel sur notre site.<reset>" to {_player}
 			send " " to {_player}
 		make a gui slot 14 of {_player} with chest named "§eLes commandes de commerce" with lore "§r" and "§fAccéder au lien" to run:
-			# WildSkript
 			close {_player}'s inventory
 			send " " to {_player}
 			send "§4§l→   §eLes commandes de commerce §7:" to {_player}
 			send "§4§l→   <link:https://mineskill.fr/forum/threads/semi-rp-cree-ton-shop.1391/><tooltip:Clique sur cette phrase>§3Clique ici pour être redirigé vers le tutoriel sur notre forum.<reset>" to {_player}
 			send " " to {_player}
 		make a gui slot 15 of {_player} with bottle o' enchanting named "§eStocker ses niveaux d'expérience" with lore "§r" and "§fAccéder au lien" to run:
-			# WildSkript
 			close {_player}'s inventory
 			send " " to {_player}
 			send "§4§l→   §eStocker ses niveaux d'éxperience §7:" to {_player}
@@ -202,28 +195,25 @@ function menuGui(player: player, menu: integer, page: integer):
 			send "§4§l→   <link:https://mineskill.fr/stocke-xp-fiole/><tooltip:Clique sur cette phrase>§3Clique ici pour être redirigé vers la 2ème méthode.<reset>" to {_player}
 			send " " to {_player}
 		make a gui slot 16 of {_player} with beacon named "§eCréation d'une ville" with lore "§r" and "§fAccéder au lien" to run:
-			# WildSkript
 			close {_player}'s inventory
 			send " " to {_player}
 			send "§4§l→   §eCréation d'une ville §7:" to {_player}
 			send "§4§l→   <link:https://mineskill.fr/creez-votre-ville/><tooltip:Clique sur cette phrase>§3Clique ici pour être redirigé vers le tutoriel sur notre site.<reset>" to {_player}
 			send " " to {_player}
 		make a gui slot 19 of {_player} with iron axe without nbt named "§eLes métiers" with lore "§r" and "§fAccéder au lien" to run:
-			# WildSkript
 			close {_player}'s inventory
 			send " " to {_player}
 			send "§4§l→   §eLes métiers §7:" to {_player}
 			send "§4§l→   <link:https://mineskill.fr/les-metiers/><tooltip:Clique sur cette phrase>§3Clique ici pour être redirigé vers le tutoriel sur notre site.<reset>" to {_player}
 			send " " to {_player}
 		make a gui slot 31 of {_player} with knowledge book named "§aEnvoyer une requête au staff" with lore "§r" to run:
-			# WildSkript
 			close {_player}'s inventory
 			send " " to {_player}
 			send "§4§l→   §aEnvoyer une requête au staff §7:" to {_player}
 			send "§4§l→   §fUtiliser la commande §e/modreq §fsuivi de votre §emessage" to {_player}
 			send "§4§l→   §fExemple: <suggest command:/modreq ><tooltip:Vous pouvez cliquer ici pour préparer une requête>§e/modreq §fJ'ai un problème avec ma maison !<reset>" to {_player}
 			send " " to {_player}
-		make a gui slot 34 of {_player} with skeleton head named "§fPrécédent" to run function menuGui({_player}, 0, 0)
+		make a gui slot 34 of {_player} with skull of ("MHF_ArrowLeft" parsed as offline player) named "§fPrécédent" to run function menuGui({_player}, 0, 0)
 		make a gui slot 35 of {_player} with oak wood door named "§fFermer" to close
 	else if {_menu} is 4:
 		open virtual chest inventory with size 2 named "§e§lInfos VIP" to {_player}
@@ -231,14 +221,12 @@ function menuGui(player: player, menu: integer, page: integer):
 			make a gui slot (loop-number + 8) of {_player} with yellow stained glass pane named "§r" to nothing
 		make a gui slot 0 and 8 of {_player} with yellow stained glass pane named "§r" to nothing
 		make a gui slot 3 of {_player} with emerald named "§eBoutique" with lore "§r" and "§eClique pour accéder à la boutique" to run:
-			# WildSkript
 			close {_player}'s inventory
 			send " " to {_player}
 			send "§4§l→   §eBoutique §7:" to {_player}
 			send "§4§l→   <link:https://mineskill.fr/boutique/><tooltip:Clique sur cette phrase>§3Clique ici pour être redirigé vers notre boutique.<reset>" to {_player}
 			send " " to {_player}
 		make a gui slot 5 of {_player} with diamond named "§eInfos VIP" with lore "§r" and "§eClique pour avoir les commandes VIP" to run:
-			# WildSkript
 			close {_player}'s inventory
 			set {_temp} to "{@loreVip}"
 			set {_send::*} to {_temp} split by "||"
@@ -247,8 +235,7 @@ function menuGui(player: player, menu: integer, page: integer):
 			loop {_send::*}:
 				send "%loop-value%" to {_player}
 			send " " to {_player}
-		# make a gui slot 16 of {_player} with skull of ("MHF_ArrowLeft" parsed as offline player) named "§fPrécédent" to run function menuGui({_player}, 0, 0)
-		make a gui slot 16 of {_player} with player head named "§fPrécédent" to run function menuGui({_player}, 0, 0)
+		make a gui slot 16 of {_player} with skull of ("MHF_ArrowLeft" parsed as offline player) named "§fPrécédent" to run function menuGui({_player}, 0, 0)
 		make a gui slot 17 of {_player} with oak wood door named "§fFermer" to close
 	else if {_menu} is 5:
 		open virtual chest inventory with size 2 named "§e§lMINI-ARCADES" to {_player}
@@ -257,5 +244,5 @@ function menuGui(player: player, menu: integer, page: integer):
 		make a gui slot 0 and 8 of {_player} with yellow stained glass pane named "§r" to nothing
 		make a gui slot 3 of {_player} with ender pearl named "§a§lMINI-ARCADES SOLO" with lore "§r", "§eJoue à des mini-arcades comme", "§ele snake, le tictactoe, tape taupe !" and "§r" to close then run {_player} command "/pg menu"
 		make a gui slot 5 of {_player} with ender eye named "§a§lMINI-ARCADES MULTI" with lore "§r", "§eDéfie tes ami(e)s sur", "§edes arcades super funs !" and "§r" to close then run {_player} command "/pg multiplayer"
-		make a gui slot 16 of {_player} with player head named "§fPrécédent" to run function menuGui({_player}, 0, 0)
+		make a gui slot 16 of {_player} with skull of ("MHF_ArrowLeft" parsed as offline player) named "§fPrécédent" to run function menuGui({_player}, 0, 0)
 		make a gui slot 17 of {_player} with oak wood door named "§fFermer" to close
