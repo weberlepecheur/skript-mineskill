@@ -3,7 +3,7 @@
 #			Auteur : WeBer_Le_Pecheur (rouer69@hotmail.fr)
 #			Pour : Mineskill.fr
 #			Requis : Skript
-#			Testé sous : Minecraft 1.13.2, Skript 2.3-beta4, Skellett 1.9.6b, TuSke 1.8.2-patch3, WildSkript 1.9
+#			Testé sous : Minecraft 1.13.2, Skript 2.3-beta5, Skellett 1.9.6b, TuSke 1.8.2-patch3, WildSkript 1.9
 #
 #------------------------------------------------
 #
@@ -95,8 +95,8 @@ function menuGui(player: player, menu: integer, page: integer):
 			make a gui slot (loop-number - 1) of {_player} with yellow stained glass pane named "§r" to nothing
 			make a gui slot (loop-number + 26) of {_player} with yellow stained glass pane named "§r" to nothing
 		make a gui slot 9, 17, 18, 21, 22, 23 and 26 of {_player} with yellow stained glass pane named "§r" to nothing
-		make a gui slot 10 of {_player} with beacon named "§a§lNos villes" with lore "§3Téléportation vers nos villes" and "§r" to run function menuGui({_player}, 1, 0)
 		make a gui slot 4 of {_player} with floor sign named "§e§lNos tutoriels" with lore "§3Clique pour accéder à nos fiches tutoriels" and "§r" to run function menuGui({_player}, 3, 0)
+		make a gui slot 10 of {_player} with beacon named "§a§lNos villes" with lore "§3Téléportation vers nos villes" and "§r" to run function menuGui({_player}, 1, 0)
 		make a gui slot 13 of {_player} with firework rocket named "§e§lMINI-ARCADES" with lore "§3Clique pour accéder à nos jeux de mini-arcades" and "§r" to run function menuGui({_player}, 5, 0)
 		make a gui slot 16 of {_player} with pieces of paper named "§e§lLiens utiles" with lore "§3Clique pour accéder à nos liens", "§r", "§f• Site", "§f• Forum", "§f• Discord", "§f• Vote" and "§r" to run:
 			# WildSkript
