@@ -61,7 +61,7 @@ command /menu [<text>]:
 			menuGui(player, 0, 0)
 		else if arg 1 is "update":
 			player is an op
-			download from "https://pastebin.com/raw/5YQZSSGb" to "plugins/Skript/scripts/%script%.sk"		#WildSkript
+			download from "https://raw.githubusercontent.com/weberlepecheur/skript-mineskill/master/menurp.sk" to "plugins/Skript/scripts/%script%.sk"		#WildSkript
 			execute console command "sk reload %script%"
 			message "§aMise à jour installée avec succès !"
 		# else if arg 1 is "debug":
