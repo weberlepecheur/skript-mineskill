@@ -146,7 +146,7 @@ function menuGui(player: player, menu: integer, page: integer):
 			give a paper of unbreaking 0 without nbt named "§d§lPapier imbibé de magie" with lore "§ePermet d'ouvrir le /menu" and "§r" to player
 		make a gui slot 21 of {_player} with diamond named "§6§lSalle d'échange" with lore "§r", "§eVenez faire vos transactions !", "§dNos salles spécifiques sécurisées !", "§r" and "§4En maintenance !" to execute console command "warp echange %{_player}%"
 		make a gui slot 22 of {_player} with gold nugget named "§6§lL'Emmacube" with lore "§r", "§eCherche vos récompenses d'événements ? Par ici !" and "§r" to execute console command "warp emmacube %{_player}%"
-		make a gui slot 23 of {_player} with red bed block named "§6§lL'hôtel" with lore "§r", "§eLocation de chambre à prix compétitif !" and "§r" to execute console command "warp hotel %{_player}%"
+		make a gui slot 23 of {_player} with bed block named "§6§lL'hôtel" with lore "§r", "§eLocation de chambre à prix compétitif !" and "§r" to execute console command "warp hotel %{_player}%"
 		make a gui slot 34 of {_player} with skull of ("MHF_ArrowLeft" parsed as offline player) named "§fPrécédent" to run function menuGui({_player}, 0, 0)
 		make a gui slot 35 of {_player} with oak wood door named "§fFermer" to close
 	else if {_menu} is 3:
