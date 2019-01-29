@@ -3,7 +3,7 @@
 #			Auteur : WeBer_Le_Pecheur (rouer69@hotmail.fr)
 #			Pour : Mineskill.fr
 #			Requis : Skript, WildSkript, SkQuery, TuSke
-#			Testé sous : Skript 2.2-dev36, WildSkript 1.9, SkQuery 3.6.1Lime, TuSke 1.8.2
+#			Testé sous : Skript 2.3.2, WildSkript 1.9, TuSke 1.8.2-pikatchu-v3
 #
 #------------------------------------------------
 #
@@ -34,8 +34,11 @@ function bottle_getLev(level: integer) :: number:																									#	Fonc
 function bottle_GUI(player: player, value: integer, admin: integer, menu: integer):
 	{_menu} = 0:
 		open virtual chest inventory with size 5 named "§2Menu" to {_player}
-		make a gui slot 0,1,2,3,4,5,6,7,8,9,17,18,19,25,26,27,35,36,37,38,39,40,41,42,43 and 44 of {_player} with gray stained glass pane named "§r"
-		make a gui slot 11,12,13,14,15,20,22,24,29,30,31,32,33 and 34 of {_player} with air
+		loop 9 times:
+			make a gui slot (loop-number - 1) of {_player} with gray stained glass pane named "§r"
+			make a gui slot (loop-number + 17) of {_player} with gray stained glass pane named "§r"
+			make a gui slot (loop-number + 35) of {_player} with gray stained glass pane named "§r"
+		make a gui slot 9,17,27 and 35 of {_player} with gray stained glass pane named "§r"
 		make a gui slot 10 of {_player} with water bottle named "§2Vous avez §6%{_player}'s level% §2Lv à mettre en fiole." to do nothing
 		make a gui slot 20 of {_player} with skull of ("MHF_ArrowUp" parsed as an offline player) named "§9Ajouter §61 §9Lv" to run:
 			if {_admin} is 1:
@@ -110,7 +113,7 @@ function bottle_GUI(player: player, value: integer, admin: integer, menu: intege
 		make a gui slot 29 of {_player} with floor sign named "§rUpdate" to run:
 			send "{@prefix} §aTéléchargement de la mise à jour..." to {_player}
 			wait 1 tick
-			download from "http://pastebin.com/raw/6mFcK4p8" to "plugins/Skript/scripts/%script%.sk"
+			download from "https://github.com/weberlepecheur/skript-mineskill/raw/master/bottlexp.sk" to "plugins/Skript/scripts/%script%.sk"
 			send "{@prefix} §aInstallation de la mise à jour..." to {_player}
 			execute console command "sk reload %script%"
 			wait 1 tick
