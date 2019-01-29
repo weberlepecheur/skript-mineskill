@@ -1,0 +1,194 @@
+﻿#------------------------------------------------
+#
+#			Auteur : WeBer_Le_Pecheur (rouer69@hotmail.fr)
+#			Pour : Mineskill.fr
+#			Requis : Skript, WildSkript, SkQuery, TuSke
+#			Testé sous : Skript 2.2-dev36, WildSkript 1.9, SkQuery 3.6.1Lime, TuSke 1.8.2
+#
+#------------------------------------------------
+#
+#			Options
+#
+#------------------------------------------------
+options:
+	
+	prefix : §e[§dMineskill§e]§7 -§r
+	
+	nbt : {display:{Name:""{\""text\"":\""§9Fiole de §6%{_player}% §9(§c%{_rng}%§9)§r\""}"",Lore:["" "",""§dContient §7: §6%{_value}%§dLv§r""]},HideFlags:1,Enchantments:[{id:""minecraft:unbreaking"",lvl:0}],CustomPotionColor:3915519}
+	
+	message : §3Vous pouvez stocker vos niveaux d'expériences dans une fiole, il vous suffit de faire un clic droit sur une table d'enchantement avec celle-ci.
+	
+	permission.admin : mineskill.admin
+	
+	debugPlayer : WeBer_Le_Pecheur|THEivrogne99|Raphy123
+
+function bottle_getLev(level: integer) :: number:																									#	Fonction permettant de récupérez le nombre de points d'expérience avant de monter en niveau.
+	{_level} is between 0 and 16:
+		set {_result} to ({_level}) ^ 2 + 6 * {_level}
+	{_level} is between 17 and 31:
+		set {_result} to 2.5 * ({_level}) ^ 2 - 40.5 * {_level} + 360
+	{_level} > 31:
+		set {_result} to 4.5 * ({_level}) ^ 2 - 162.5 * {_level} + 2220
+	return {_result}
+
+function bottle_GUI(player: player, value: integer, admin: integer, menu: integer):
+	{_menu} = 0:
+		open virtual chest inventory with size 5 named "§2Menu" to {_player}
+		make a gui slot 0,1,2,3,4,5,6,7,8,9,17,18,19,25,26,27,35,36,37,38,39,40,41,42,43 and 44 of {_player} with gray stained glass pane named "§r"
+		make a gui slot 11,12,13,14,15,20,22,24,29,30,31,32,33 and 34 of {_player} with air
+		make a gui slot 10 of {_player} with water bottle named "§2Vous avez §6%{_player}'s level% §2Lv à mettre en fiole." to do nothing
+		make a gui slot 20 of {_player} with skull of ("MHF_ArrowUp" parsed as an offline player) named "§9Ajouter §61 §9Lv" to run:
+			if {_admin} is 1:
+				add 1 to {_value}
+				bottle_GUI({_player}, {_value}, {_admin}, {_menu})
+			else if {_value} < {_player}'s level:
+				add 1 to {_value}
+				bottle_GUI({_player}, {_value}, {_admin}, {_menu})
+			else:
+				send "§c§lVous ne pouvez mettre plus de Lv que vous n'en avez." to {_player}
+		make a gui slot 21 of {_player} with skull of ("MHF_ArrowUp" parsed as an offline player) named "§9Ajouter §610 §9Lv" to run:
+			if {_admin} is 1:
+				add 10 to {_value}
+				bottle_GUI({_player}, {_value}, {_admin}, {_menu})
+			else if ({_value} + 10) < {_player}'s level:
+				add 10 to {_value}
+				bottle_GUI({_player}, {_value}, {_admin}, {_menu})
+			else:
+				send "§c§lVous ne pouvez mettre plus de Lv que vous n'en avez." to {_player}
+		make a gui slot 22 of {_player} with bottles o' enchanting named "§2Vous allez créer une fiole contenant §6%{_value}% §2Lv" to do nothing
+		make a gui slot 23 of {_player} with skull of ("MHF_ArrowDown" parsed as an offline player) named "§7Retirer §610 §7Lv" to run:
+			if {_value} >= 10:
+				remove 10 from {_value}
+				bottle_GUI({_player}, {_value}, {_admin}, {_menu})
+			else:
+				send "§c§lVous ne pouvez pas descendre en dessous de 0." to {_player}
+		make a gui slot 24 of {_player} with skull of ("MHF_ArrowDown" parsed as an offline player) named "§7Retirer §61 §7Lv" to run:
+			if {_value} > 0:
+				remove 1 from {_value}
+				bottle_GUI({_player}, {_value}, {_admin}, {_menu})
+			else:
+				send "§c§lVous ne pouvez pas descendre en dessous de 0." to {_player}
+		make a gui slot 34 of {_player} with nether star named "§9Enchantez la fiole !" to run:
+			set {_temp} to "{@debugPlayer}"
+			set {_debugPlayer::*} to {_temp} split by "|"
+			loop {_debugPlayer::*}:
+				set {_debugPlayer::%loop-index%} to loop-value parsed as offline player
+			next empty slot of {_player}'s inventory != -1:	#Skellett
+				{_value} > 0:
+					set {_rng} to random integer between 0 and 99999
+					loop {bottle_rng::*}:
+						loop-index is {_rng}
+						send "§c§lUne erreur est survenue, veuillez réessayez." to {_player}
+						stop
+					add {_rng} to {bottle_rng::%{_rng}%}
+					set {bottle_rng::%{_rng}%} to bottle_getLev({_value})
+					add {_player} to {bottle_rng::%{_rng}%::*}
+					add {_value} to {bottle_rng::%{_rng}%::*}
+					add now to {bottle_rng::%{_rng}%::*}
+					if {_admin} is 0:
+						remove bottle_getLev({_value}) from {_player}'s xp
+						remove glass bottle from {_player}
+					execute console command "give %{_player}% potion 1 {@nbt}"
+					close {_player}'s inventory
+					log " add | RNG: %{_rng}% | ADMIN: %{_admin}% | ORB: %{bottle_rng::%{_rng}%}% | LVL: %{_value}% | %{_player}%" to "bottlexp.log"
+					# send "§7[LOG] §fadd §7| §fRNG: §6%{_rng}% §7| §fADMIN: §6%{_admin}% §7| §fORB: §6%{bottle_rng::%{_rng}%}% §7| §fLVL: §6%{_value}% §7| §6%{_player}%" to {_debugPlayer::*}
+				else:
+					send "§c§lVous ne pouvez pas créer de bouteille vide." to {_player}
+			else:
+				send "§c§lVous ne pouvez pas créer de bouteille avec un inventaire plein." to {_player}
+		{_player} has permission "{@permission.admin}"
+		if {_admin} is 1:
+			set {_lore} to "§6Actif"
+		else:
+			set {_lore} to "§r"
+		make a gui slot 28 of {_player} with end crystal item named "§4Mode admin" with lore "%{_lore}%" to run:
+			send "§c§lVous activer le mode admin." to {_player}
+			set {_admin} to 1
+			bottle_GUI({_player}, {_value}, {_admin}, {_menu})
+		make a gui slot 16 of {_player} with book and quill named "§rHistorique" to run:
+			bottle_GUI({_player}, {_value}, 1, 1)
+		make a gui slot 29 of {_player} with floor sign named "§rUpdate" to run:
+			send "{@prefix} §aTéléchargement de la mise à jour..." to {_player}
+			wait 1 tick
+			download from "http://pastebin.com/raw/6mFcK4p8" to "plugins/Skript/scripts/%script%.sk"
+			send "{@prefix} §aInstallation de la mise à jour..." to {_player}
+			execute console command "sk reload %script%"
+			wait 1 tick
+			send "{@prefix} §aMise à jour installée avec succès !" to {_player}
+	else:
+		open virtual chest inventory with size 6 named "§2Historique page %{_admin}%" to {_player}
+		make a gui slot 36, 37, 38, 39, 40, 41, 42, 43 and 44 of {_player} with pink stained glass pane named "§r" to nothing
+		if {_admin} > 1:
+			make a gui slot 49 of {_player} with skull of ("MHF_ArrowLeft" parsed as offline player) named "§fPage précédente" to run:
+				remove 36 from {_value}
+				remove 1 from {_admin}
+				bottle_GUI({_player}, {_value}, {_admin}, {_menu})
+		make a gui slot 53 of {_player} with oak wood door named "§fFermer" to close
+		set {_slot} and {_pass} to 0
+		add {_value} to {_pass}
+		loop {bottle_rng::*}:
+			{_pass} = 0:
+				{_slot} <= 35:
+					set {_count} to "%{bottle_rng::%loop-index%::2}%" parsed as number
+					if {_count} > 64:
+						set {_count} to 64
+					else if {_count} isn't set:
+						set {_count} to 1
+					set {_i} to loop-index
+					make a gui slot {_slot} of {_player} with {_count} of bottles o' enchanting named "§fRNG: §6%loop-index%" with lore "§fORB: §6%loop-value%", "§fJoueur: §6%{bottle_rng::%loop-index%::1}%", "§fLevel: §6%{bottle_rng::%loop-index%::2}%", "§fDate: §6%{bottle_rng::%loop-index%::3}%", "§r" and "§3Clique pour obtenir la potion" to run:
+						close {_player}'s inventory
+						execute console command "give %{_player}% potion 1 {display:{Name:""{\""text\"":\""§9Fiole de §6%{_player}% §9(§c%{_i}%§9)§r\""}""},HideFlags:1,Enchantments:[{id:""minecraft:unbreaking"",lvl:0}],Potion:""minecraft:mundane"",CustomPotionColor:3915519}"
+					add 1 to {_slot}
+				else:
+					make a gui slot 50 of {_player} with skull of ("MHF_ArrowRight" parsed as offline player) named "§fPage suivante" to run:
+						add 36 to {_value}
+						add 1 to {_admin}
+						bottle_GUI({_player}, {_value}, {_admin}, {_menu})
+					stop loop
+			else:
+				remove 1 from {_pass}
+
+every 30 minutes:
+	broadcast "{@prefix} {@message}"
+
+on right click on enchantment table holding glass bottle:
+	event-block is enchantment table
+	cancel event
+	bottle_GUI(player, 0, 0, 0)
+
+on right click:
+	# event-item is water_bottle or exp_bottle	#	Exp bottle from v1
+	event-item is bottles o' enchanting or water bottle
+	set {_name::*} to name of event-item split by "("
+	set {_name::*} to {_name::2} split by ")"
+	replace all "§6", "§9", "§c" and "§9" with "" in {_name::1}
+	loop {bottle_rng::*}:
+		loop-index is {_name::1}
+		cancel event
+		set {_temp} to "{@debugPlayer}"
+		set {_debugPlayer::*} to {_temp} split by "|"
+		loop {_debugPlayer::*}:
+			set {_debugPlayer::%loop-index-2%} to loop-value-2 parsed as offline player
+		remove event-item from player
+		loop-value <= 32000:
+			execute console command "execute at %player% run summon minecraft:experience_orb ~0 ~0 ~0 {Value:%loop-value%}"
+		else:
+			add loop-value to player's xp
+		message "§6Vous avez reçu §e%{bottle_rng::%loop-index%::2}%§6Lv grâce à une bouteille d'xp."
+		log " use | RNG: %loop-index% | ORB: %{bottle_rng::%loop-index%}% | LVL: %{bottle_rng::%loop-index%::2}% | %player%" to "bottlexp.log"
+		# send "§7[LOG] §fuse §7| §fRNG: §6%loop-index% §7| §fORB: §6%{bottle_rng::%{_rng}%}% §7| §fLVL: §6%{bottle_rng::%loop-index%::2}% §7| §6%player%" to {_debugPlayer::*}
+		clear {bottle_rng::%loop-index%::*} 
+		clear {bottle_rng::%loop-index%}
+		stop loop
+
+# command /tbottle:
+	# permission: {@permission.admin}
+	# trigger:
+		# loop {bottleList::*}:
+			# add loop-value to {bottle_rng::%loop-value%}
+			# set {bottle_rng::%loop-value%} to {bottlexp.%loop-value%}
+			# add {bottleAuthor.%loop-value%} to {bottle_rng::%loop-value%::*}
+			# add {bottlexpLv.%loop-value%} to {bottle_rng::%loop-value%::*}
+			# add {bottleHistory.%loop-value%} to {bottle_rng::%loop-value%::*}
+			# clear {bottleAuthor.%loop-value%}, {bottlexpLv.%loop-value%} and {bottleHistory.%loop-value%}
+			# remove loop-value from {bottleList::*}
