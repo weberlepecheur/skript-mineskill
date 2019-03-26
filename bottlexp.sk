@@ -163,7 +163,7 @@ on right click:
 	# event-item is water_bottle or exp_bottle	#	Exp bottle from v1
 	player has permission "mineskill.admin":
 		send "%event-item% :: %player's tool%"
-	event-item is bottles o' enchanting or water bottle
+	event-item is water bottle
 	set {_name::*} to name of event-item split by "("
 	set {_name::*} to {_name::2} split by ")"
 	replace all "§6", "§9", "§c" and "§9" with "" in {_name::1}
