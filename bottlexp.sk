@@ -110,10 +110,10 @@ function bottle_GUI(player: player, value: integer, admin: integer, menu: intege
 			bottle_GUI({_player}, {_value}, {_admin}, {_menu})
 		make a gui slot 16 of {_player} with book and quill named "§rHistorique" to run:
 			bottle_GUI({_player}, {_value}, 1, 1)
-		make a gui slot 29 of {_player} with floor sign named "§rUpdate" with lore "2.3.2" to run:
+		make a gui slot 29 of {_player} with floor sign named "§rUpdate" with lore "2.3.4" to run:
 			send "{@prefix} §aTéléchargement de la mise à jour..." to {_player}
 			wait 1 tick
-			download from "https://github.com/weberlepecheur/skript-mineskill/raw/master/bottlexp.sk" to "plugins/Skript/scripts/%script%.sk"
+			download from "https://raw.githubusercontent.com/weberlepecheur/skript-mineskill/master/bottlexp.sk" to "plugins/Skript/scripts/%script%.sk"
 			send "{@prefix} §aInstallation de la mise à jour..." to {_player}
 			execute console command "sk reload %script%"
 			wait 1 tick
@@ -161,19 +161,15 @@ on right click on enchantment table holding glass bottle:
 
 on right click:
 	# event-item is water_bottle or exp_bottle	#	Exp bottle from v1
-	player has permission "mineskill.admin":
-		send "%event-item% :: %player's tool%"
 	event-item is water bottle
+	send "event-item passed :: %event-item%" to all players where [player input has permission "{@permission.admin}"]
 	set {_name::*} to name of event-item split by "("
 	set {_name::*} to {_name::2} split by ")"
 	replace all "§6", "§9", "§c" and "§9" with "" in {_name::1}
+	send "rename passed :: %{_name::1}%" to all players where [player input has permission "{@permission.admin}"]
 	loop {bottle_rng::*}:
 		loop-index is {_name::1}
 		cancel event
-		set {_temp} to "{@debugPlayer}"
-		set {_debugPlayer::*} to {_temp} split by "|"
-		loop {_debugPlayer::*}:
-			set {_debugPlayer::%loop-index-2%} to loop-value-2 parsed as offline player
 		remove event-item from player
 		loop-value <= 32000:
 			execute console command "execute at %player% run summon minecraft:experience_orb ~0 ~0 ~0 {Value:%loop-value%}"
@@ -181,7 +177,6 @@ on right click:
 			add loop-value to player's xp
 		message "§6Vous avez reçu §e%{bottle_rng::%loop-index%::2}%§6Lv grâce à une bouteille d'xp."
 		log " use | RNG: %loop-index% | ORB: %{bottle_rng::%loop-index%}% | LVL: %{bottle_rng::%loop-index%::2}% | %player%" to "bottlexp.log"
-		# send "§7[LOG] §fuse §7| §fRNG: §6%loop-index% §7| §fORB: §6%{bottle_rng::%{_rng}%}% §7| §fLVL: §6%{bottle_rng::%loop-index%::2}% §7| §6%player%" to {_debugPlayer::*}
 		clear {bottle_rng::%loop-index%::*} 
 		clear {bottle_rng::%loop-index%}
 		stop loop
