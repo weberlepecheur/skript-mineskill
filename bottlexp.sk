@@ -110,7 +110,7 @@ function bottle_GUI(player: player, value: integer, admin: integer, menu: intege
 			bottle_GUI({_player}, {_value}, {_admin}, {_menu})
 		make a gui slot 16 of {_player} with book and quill named "§rHistorique" to run:
 			bottle_GUI({_player}, {_value}, 1, 1)
-		make a gui slot 29 of {_player} with floor sign named "§rUpdate" with lore "2.3.4" to run:
+		make a gui slot 29 of {_player} with floor sign named "§rUpdate" with lore "2.3.5" to run:
 			send "{@prefix} §aTéléchargement de la mise à jour..." to {_player}
 			wait 1 tick
 			download from "https://raw.githubusercontent.com/weberlepecheur/skript-mineskill/master/bottlexp.sk" to "plugins/Skript/scripts/%script%.sk"
@@ -162,11 +162,11 @@ on right click on enchantment table holding glass bottle:
 on right click:
 	# event-item is water_bottle or exp_bottle	#	Exp bottle from v1
 	event-item is water bottle
-	send "event-item passed :: %event-item%" to all players where [player input has permission "{@permission.admin}"]
+	send "event-item passed :: %event-item%" to player where [player input has permission "{@permission.admin}"]
 	set {_name::*} to name of event-item split by "("
 	set {_name::*} to {_name::2} split by ")"
 	replace all "§6", "§9", "§c" and "§9" with "" in {_name::1}
-	send "rename passed :: %{_name::1}%" to all players where [player input has permission "{@permission.admin}"]
+	send "rename passed :: %{_name::1}%" to player where [player input has permission "{@permission.admin}"]
 	loop {bottle_rng::*}:
 		loop-index is {_name::1}
 		cancel event
