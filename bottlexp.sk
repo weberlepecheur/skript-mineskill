@@ -110,11 +110,12 @@ function bottle_GUI(player: player, value: integer, admin: integer, menu: intege
 			bottle_GUI({_player}, {_value}, {_admin}, {_menu})
 		make a gui slot 16 of {_player} with book and quill named "§rHistorique" to run:
 			bottle_GUI({_player}, {_value}, 1, 1)
-		make a gui slot 29 of {_player} with floor sign named "§rUpdate" with lore "2.3.7" to run:
+		make a gui slot 29 of {_player} with floor sign named "§rUpdate" with lore "2.3.8" to run:
 			send "{@prefix} §aTéléchargement de la mise à jour..." to {_player}
 			wait 1 tick
 			download from "https://raw.githubusercontent.com/weberlepecheur/skript-mineskill/master/bottlexp.sk" to "plugins/Skript/scripts/%script%.sk"
 			send "{@prefix} §aInstallation de la mise à jour..." to {_player}
+			wait 1 tick
 			execute console command "sk reload %script%"
 			wait 1 tick
 			send "{@prefix} §aMise à jour installée avec succès !" to {_player}
