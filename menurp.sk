@@ -123,6 +123,7 @@ function menuGui(player: player, menu: integer, page: integer):
 		make a gui slot 13 of {_player} with spruce wood planks named "§e• WestTown •" with lore "§r", "§eWestTown, la ville du Far West" and "§2Maire§7: §eTHEivrogne99" to execute console command "warp westtown %{_player}%"
 		make a gui slot 14 of {_player} with spruce log named "§c• Caylus •" with lore "§r", "§eCaylus, la ville médiévale" and "§2Maire§7: §eTHEivrogne99" to execute console command "warp caylus %{_player}%"
 		make a gui slot 15 of {_player} with sea lantern named "§d• Utopia •" with lore "§r", "§eUtopia, la ville du futur" and "§2Maire§7: §eLE STAFF" to execute console command "warp utopia %{_player}%"
+		make a gui slot 16 of {_player} with dark prismarine named "§9• Sea-City •" with lore "§r", "§eSea-City, la ville sous-marine" and "§2Maire§7: §eWait4Mi & SuperBrass" and "§6EN CONSTRUCTION" to execute console command "warp SeaCity %{_player}%"
 		make a gui slot 25 of {_player} with skull of ("MHF_ArrowLeft" parsed as offline player) named "§fPrécédent" to run function menuGui({_player}, 0, 0)
 		make a gui slot 26 of {_player} with oak wood door named "§fFermer" to close
 	else if {_menu} is 2:
