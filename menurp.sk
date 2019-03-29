@@ -109,7 +109,8 @@ function menuGui(player: player, menu: integer, page: integer):
 			send " " to {_player}
 		make a gui slot 19 of {_player} with book and quill named "§a§lNos services publics" with lore "§3Téléportation vers nos services publics", "§r", "§f• Banque", "§f• Gare", "§f• Casino", "§f• AMPE", "§f• Mairie", "§f• Hôtel", "§f• Emmacube" and "§r" to run function menuGui({_player}, 2, 0)
 		make a gui slot 25 of {_player} with enchanted book named "§c§lI§e§ln§a§lf§3§lo§9§ls §5§lV§7§lI§4§lP" with lore "§r" to run function menuGui({_player}, 4, 0)
-		make a gui slot 31 of {_player} with skull of {_player} named "§6%{_player}%" with lore "{@lorePlayer}" to nothing
+		make a gui slot 30 of {_player} with enderdragon head named "Cosmétiques" with lore "§r" to close then run {_player} command "/pc open main"
+		make a gui slot 32 of {_player} with skull of {_player} named "§6%{_player}%" with lore "{@lorePlayer}" to nothing
 		make a gui slot 35 of {_player} with oak wood door named "§fFermer" to close
 	else if {_menu} is 1:
 		open virtual chest inventory with size 3 named "§3Nos villes" to {_player}
