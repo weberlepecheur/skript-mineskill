@@ -163,7 +163,7 @@ on right click on enchantment table holding glass bottle:
 on right click:
 	# event-item is water_bottle or exp_bottle	#	Exp bottle from v1
 	# send "%event-item% :: %name of event-item%" to player where [input has permission "{@permission.admin}"]
-	event-item is water bottle
+	# event-item is water bottle
 	# send "event-item passed :: %event-item%" to player where [input has permission "{@permission.admin}"]
 	set {_name::*} to name of event-item split by "("
 	set {_name::*} to {_name::2} split by ")"
