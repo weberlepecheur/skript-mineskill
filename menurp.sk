@@ -55,7 +55,7 @@ command /addvote <offline player>:
 			set {vote::%loop-index%::1} to ({vote::%loop-index%::1} + 1)
 			set {vote::%loop-index%::2} to now
 
-command /menu [<text>]:
+command /menu [<text>] [<text>]:
 	trigger:
 		arg 1 isn't set:
 			menuGui(player, 0, 0)
