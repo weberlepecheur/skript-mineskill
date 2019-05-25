@@ -110,7 +110,10 @@ command /xpkdebug <text> <offline player>:
 	usage: §c/xkpdebug §7<find | remove/rem> §6<player>§r
 	trigger:
 		if arg 1 is "find":
-			send "{@prefix} §eJoueur: §6%arg 2%    §eLocalisation: §3%{xpbank.%uuid of arg 2%}%"
+			{xpbank.%uuid of arg 2%} is set:
+				send "{@prefix} §eJoueur: §6%arg 2%    §eLocalisation: §3%{xpbank.%uuid of arg 2%}%"
+				stop
+			send "{@prefix} §eLe joueur §6%arg 2% §ene possèdent pas d'xpbank."
 		else if arg 1 is "remove" or "rem":
 			loop {xpbank::*}:
 				loop-value is uuid of arg 2
@@ -118,8 +121,6 @@ command /xpkdebug <text> <offline player>:
 				send "§6%offline player from loop-value%   §rretiré" # Tuske
 				remove loop-value from {xpbank::*}
 				stop
-		else if arg 1 is "else":
-			execute console command "give %player% iron_axe 1 {display:{Name:""{\""text\"":\""§6Chasseur expert de citrouilles\""}"",Lore:["""",""§6Evénement d'Halloween 2018"","""",""§eItem unique Mineskill"",""§eInvendable""]},Enchantments:[{id:""minecraft:efficiency"",lvl:2},{id:""minecraft:unbreaking"",lvl:2}]}"
 on break:
 	loop blocks in radius 1 of event-location:
 		line 1 of loop-block is "{@ligne.creation}"
