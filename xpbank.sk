@@ -96,7 +96,7 @@ command /xpkupdate:
 	trigger:
 		message "{@prefix} §aTéléchargement de la mise à jour..."
 		wait 1 tick
-		download from "https://pastebin.com/raw/KgruAVtJ" to "plugins/Skript/scripts/%script%.sk"	#	WildSkript
+		download from "https://raw.githubusercontent.com/weberlepecheur/skript-mineskill/master/xpbank.sk" to "plugins/Skript/scripts/%script%.sk"	#	WildSkript
 		message "{@prefix} §aInstallation de la mise à jour..."
 		execute console command "sk reload %script%"
 		wait 1 tick
