@@ -22,8 +22,6 @@ options:
 	
 	world : world
 	
-	debugPlayer : WeBer_Le_Pecheur|Raphy123|THEivrogne99
-	
 #	#	#	#	#	#	#
 # Permissions requises
 	permission.message : §cVous n'avez pas la permission d'utiliser l'xpbank.
