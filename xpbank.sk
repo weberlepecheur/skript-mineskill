@@ -185,10 +185,6 @@ on left click on sign:
 		clear {xpbank.%{_player}%} and {xpbank.%{_uuid}%}
 		stop
 	player has permission "{@permission.global}":
-		# set {_temp} to "{@debugPlayer}"
-		# set {_debugPlayer::*} to {_temp} split by "|"
-		# loop {_debugPlayer::*}:
-			# set {_debugPlayer::%loop-index%} to loop-value parsed as offline player
 		line 2 of block is player:
 			set {_line::*} to line 3 of block split at ": "
 			add line 4 of block split at ": " to {_line::*}
@@ -204,32 +200,20 @@ on left click on sign:
 					set {_while} to true
 					while {_while} is true:
 						set {_getLevel} to xpbank_getLev({_signLevel})			# Combien de level pour aller au niveau supérieur (panneau)
-						# log "%player%: 1: XP Nécessaire : %{_getLevel}% pour up Lv%({_signLevel}+1)%" to "xpbank.log"
-						# log "%player%: 2: Retire XP sign : %{_signXp}% de XP up %{_getLevel}%" to "xpbank.log"
 						log " add | BANK: %{_signLevel}%Lv | BANK: %{_signXp}%XP | %player%: %{_xpPlayer}%XP" to "xpbank.log"
-						# send "§7[LOG] §fadd §7| §fBANK: §6%{_signLevel}%§fLv §7| §fBANK: §6%{_signXp}%§fXP §7| §6%player%§f: §6%{_xpPlayer}%§fXP" to {_debugPlayer::*}
-						# send "%player%: §61: §rXP Nécessaire : %{_getLevel}% pour up Lv%({_signLevel}+1)%" to {_debugPlayer}
-						# send "%player%: §62: §rRetire XP sign : %{_signXp}% de XP up %{_getLevel}%" to {_debugPlayer}
 						set {_remainXp} to ({_getLevel} - {_signXp})			# Xp restant nécessaire après avoir soustrait l'xp contenu dans le panneau
 						set {_signXp} to 0										# Met l'xp panneau à 0
 						{_remainXp} < {_xpPlayer}:								# L'xp nécessaire pour up est < à l'xp du joueur
-							# log "%player%: 3: Retire XP nécessaire : %{_remainXp}% du joueur : %{_xpPlayer}%" to "xpbank.log"
-							# send "%player%: §63: §rRetire XP nécessaire : %{_remainXp}% du joueur : %{_xpPlayer}%" to {_debugPlayer}
 							remove {_remainXp} from {_xpPlayer}					# Retire xp nécessaire de l'xp joueur
 							add 1 to {_signLevel}
 						else:
-							# log "%player%: 4: Retire XP joueur : %{_xpPlayer}% de l'xp nécessaire %{_remainXp}%" to "xpbank.log"
-							# send "%player%: §64: §rRetire XP joueur : %{_xpPlayer}% de l'xp nécessaire %{_remainXp}%" to {_debugPlayer}
 							remove {_xpPlayer} from {_remainXp}					# Retire xp joueur de l'xp nécessaire pour up
-							# log "%player%: 5: XP panneau devient : %({_getLevel} - {_remainXp})%" to "xpbank.log"
-							# send "%player%: §65: §rXP panneau devient : %({_getLevel} - {_remainXp})%" to {_debugPlayer}
 							set {_signXp} to ({_getLevel} - {_remainXp})
 							clear {_while}
 					set player's xp to 0
 				set line 3 of block to "{@ligne.3}: %{_signLevel}%"
 				set line 4 of block to "{@ligne.4}: %{_signXp}%"
 				log " end | BANK: %{_signLevel}%Lv | BANK: %{_signXp}%XP §7| %player%: %player's xp%XP" to "xpbank.log"
-				# send "§7[LOG] §fend §7| §fBANK: §6%{_signLevel}%§fLv §7| §fBANK: §6%{_signXp}%§fXP §7| §6%player%§f: §6%player's xp%§fXP" to {_debugPlayer::*}
 			else:
 				send "{@prefix} {@erreur.niveau}"
 		else:
