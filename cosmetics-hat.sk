@@ -11,5 +11,5 @@ options:
 on command "/hat":
 	player has permission "{@emote.dealwithit}", "{@emote.happy}", "{@emote.inlove}", "{@emote.rage}", "{@emote.sad}", "{@emote.suprised}" or "{@emote.wink}"
 	player's helmet is a player head
-	send "<dark_red>[Erreur] <red>Vous ne pouvez pas utiliser cette commande lorsque vous portez une tête personnalisé."
+	send "§4[Erreur] §cVous ne pouvez pas utiliser cette commande lorsque vous portez une tête personnalisé."
 	cancel event
