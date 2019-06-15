@@ -9,12 +9,7 @@ options:
 	emote.wink : ProCosmetics.Emotes.Wink
 
 on command "/hat":
-	send "Pass 1" to player where [input has permission "mineskill.admin"]
 	player has permission "{@emote.dealwithit}", "{@emote.happy}", "{@emote.inlove}", "{@emote.rage}", "{@emote.sad}", "{@emote.suprised}" or "{@emote.wink}"
-	send "Pass 2" to player where [input has permission "mineskill.admin"]
 	player's helmet is a player head
-	send "Pass 3" to player where [input has permission "mineskill.admin"]
 	send "§4[Erreur] §cVous ne pouvez pas utiliser cette commande lorsque vous portez une tête personnalisé."
-	send "Pass 4" to player where [input has permission "mineskill.admin"]
 	cancel event
-	send "Pass 5" to player where [input has permission "mineskill.admin"]
