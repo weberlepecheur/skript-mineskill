@@ -17,7 +17,7 @@ options:
 	actionbar : §9Accéder à de nombreuses informations grâce à notre §6/menu§9.
 	
 	lorePlayer : §r", "§aA voté §7: §f%{_vote::1}%", "§aDernier vote §7: §f%{_vote::2}%", "§r", "§aSanté §7: §f%{_player}'s health%", "§aFaim §7: §f%{_player}'s food level%", "§aExpérience §7: §f%{_player}'s xp% §a(Niveau §f%{_player}'s level%§a)", "§aArgent §7: §f%rounded {_player}'s account% $", "§aMétier §7: §f%{_job::1}% §a(Niveau §f%{_job::2}%§a)", "§r
-	loreVip : §6/kittycanon §7› §fPour lancer un chat explosif||§6/magiccarpet §fou §6/mc §7› §fPour activer un tapis volant||§6/magiccarpet tools §fou §6/mc tools §7› §fPour activer les outils du tapis volant||§6/near §7› §fPour savoir qui est présent autour de vous||§6/hat §7› §fPose un bloc de votre main sur la tête
+	loreVip : §6/kittycanon §7› §fPour lancer un chat explosif||§6/magiccarpet §fou §6/mc §7› §fPour activer un tapis volant||§6/magiccarpet tools §fou §6/mc tools §7› §fPour activer les outils du tapis volant||§6/near §7› §fPour savoir qui est présent autour de vous||§6/hat §7› §fPose un bloc de votre main sur la tête||§6/pet gui §7› §fOuvre un menu avec tout sur les pet
 	loreMarriage : §6/marry <pseudo> §7› §fEnvoyer une demande en mariage à <pseudo>||§6/marry list §7› §fAffiche la liste des couples mariés||§6/marry divorce §7› §fPermet de divorer §4(150$ pour divorcer)||§6/marry tp §7› §fVous téléporte à votre conjoint §4(15$ par téléportation)||§6/marry sethome §7› §fDéfinit un home commun au couple||§6/marry home §7› §fVous téléporte au home commun||§6/marry chat §7› §fActive/désactive le tchat entre votre conjoint et vous||§6/marry seen §7› §fAffiche le dernière connexion de votre conjoint||§6/marry gift §7› §fEnvoi l'objet tenu en main à votre conjoint||§6/marry gender <male/female> §7› §fAffiche publiquement votre genre dans le tchat lorsque vous parlerez (♂ ou ♀)||§6/marry pvp <on/off> §7› §fActive/désactive le pvp entre votre conjoint et vous||§6/marry heal §7› §fPermet d'envoyer vos coeurs de vie à votre conjoint, de le soigner
 	
 on join:
@@ -55,7 +55,7 @@ command /addvote <offline player>:
 			set {vote::%loop-index%::1} to ({vote::%loop-index%::1} + 1)
 			set {vote::%loop-index%::2} to now
 
-command /menu [<text>] [<text>]:
+command /menu [<text>]:
 	trigger:
 		arg 1 isn't set:
 			menuGui(player, 0, 0)
@@ -109,7 +109,7 @@ function menuGui(player: player, menu: integer, page: integer):
 			send " " to {_player}
 		make a gui slot 19 of {_player} with book and quill named "§a§lNos services publics" with lore "§3Téléportation vers nos services publics", "§r", "§f• Banque", "§f• Gare", "§f• Casino", "§f• AMPE", "§f• Mairie", "§f• Hôtel", "§f• Emmacube" and "§r" to run function menuGui({_player}, 2, 0)
 		make a gui slot 25 of {_player} with enchanted book named "§c§lI§e§ln§a§lf§3§lo§9§ls §5§lV§7§lI§4§lP" with lore "§r" to run function menuGui({_player}, 4, 0)
-		make a gui slot 30 of {_player} with enderdragon head named "§e§lCosmétiques" with lore "§r" to run:
+		make a gui slot 30 of {_player} with enderdragon head named "§e§lCosmétiques" with lore "§5Dépensez vos §5§5CosméSkills §5pour" and "&5faire la collection des cosmétiques !" to run:
 			close {_player}'s inventory
 			send " " to {_player}
 			send "&6§lRemportez vos CosméSkills lors de nos événements ou achetez-les sur ce lien : <link:http://mineskill.fr/boutique/><tooltip:Cliquer pour y accédez>§6http://mineskill.fr/boutique/<reset>" to {_player}
@@ -154,6 +154,9 @@ function menuGui(player: player, menu: integer, page: integer):
 		make a gui slot 21 of {_player} with diamond named "§6§lSalle d'échange" with lore "§r", "§eVenez faire vos transactions !", "§dNos salles spécifiques sécurisées !", "§r" and "§4En maintenance !" to execute console command "warp echange %{_player}%"
 		make a gui slot 22 of {_player} with gold nugget named "§6§lL'Emmacube" with lore "§r", "§eCherche vos récompenses d'événements ? Par ici !" and "§r" to execute console command "warp emmacube %{_player}%"
 		make a gui slot 23 of {_player} with red bed named "§6§lL'hôtel" with lore "§r", "§eLocation de chambre à prix compétitif !" and "§r" to execute console command "warp hotel %{_player}%"
+		make a gui slot 24 of {_player} with book and quill named "§6§lLe théâtre" with lore "§r", "§eUne salle hors du commun !" and "§r" to execute console command "warp theatre %{_player}%"
+		make a gui slot 25 of {_player} with bookshelf named "§6§lLa bibliothèque" with lore "§r", "§eUne envie de lecture ?" and "§r" to execute console command "warp bibliotheque %{_player}%"
+
 		make a gui slot 34 of {_player} with skull of ("MHF_ArrowLeft" parsed as offline player) named "§fPrécédent" to run function menuGui({_player}, 0, 0)
 		make a gui slot 35 of {_player} with oak wood door named "§fFermer" to close
 	else if {_menu} is 3:
